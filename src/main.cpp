@@ -94,7 +94,7 @@ void setup(void) {
   display.setTextSize(2);
   display.setTextColor(WHITE);
   display.setCursor(0, 0);
-  display.println("Welcome");
+  display.println("Welcome!");
   display.println("Measure");
   display.println("Voltage");
   display.println("Max 20V");
@@ -107,7 +107,7 @@ void setup(void) {
 
 void loop(void) {
 
-  AsyncElegantOTA.loop();
+  // AsyncElegantOTA.loop();
 
   ADC_Pin_33 = analogRead(Pin_33);
   Voltage_Pin_33 = (ADC_Pin_33 * 3.3) / (4095);
