@@ -49,8 +49,6 @@ float Voltage_Pin_32 = 0;
 float Voltage_Pin_35 = 0;
 float Voltage_Pin_34 = 0;
 
-
-
 void setup(void) {
 
   // Wifi, server and OTA stuff
