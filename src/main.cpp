@@ -18,10 +18,12 @@
 #include <Adafruit_SSD1306.h>
 #include <Adafruit_I2CDevice.h> // Guillaume add
 
-const char* ssid = "freebox_OOKMJG";
-const char* password = "38100Alexandre!";
+const char *ssid = "freebox_OOKMJG";
+const char *password = "38100Alexandre!";
 
 AsyncWebServer server(80);
+
+WiFiServer server_2(52000);
 
 // OLED parameter and objects
 
@@ -49,7 +51,8 @@ float Voltage_Pin_32 = 0;
 float Voltage_Pin_35 = 0;
 float Voltage_Pin_34 = 0;
 
-void setup(void) {
+void setup(void)
+{
 
   // Wifi, server and OTA stuff
 
@@ -59,7 +62,8 @@ void setup(void) {
   Serial.println("");
 
   // Wait for connection
-  while (WiFi.status() != WL_CONNECTED) {
+  while (WiFi.status() != WL_CONNECTED)
+  {
     delay(500);
     Serial.print(".");
   }
@@ -69,18 +73,17 @@ void setup(void) {
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
 
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(200, "text/plain", "Hi! I am ESP32.");
-  });
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send(200, "text/plain", "Hi! I am ESP32."); });
 
-  AsyncElegantOTA.begin(&server);    // Start ElegantOTA
+  AsyncElegantOTA.begin(&server); // Start ElegantOTA
   server.begin();
   Serial.println("HTTP server started");
 
+  server_2.begin();
 
-
-// OLED stuff
-// SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
+  // OLED stuff
+  // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
 
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C))
   {
@@ -102,65 +105,82 @@ void setup(void) {
   display.display();
 
   delay(5000);
-
 }
 
-void loop(void) {
+void loop(void)
+{
+  WiFiClient client = server_2.available(); // listen for incoming clients
 
-  // AsyncElegantOTA.loop();
+  if (client)
+  { // if you get a client,
+    // Serial.println("New Client."); // print a message out the serial port
+    String currentLine = "";
 
-  ADC_Pin_33 = analogRead(Pin_33);
-  Voltage_Pin_33 = (ADC_Pin_33 * 3.3) / (4095);
-  Serial.println(Voltage_Pin_33);
+    while (client.connected())
+    { // loop while the client's connected
+      ADC_Pin_33 = analogRead(Pin_33);
+      Voltage_Pin_33 = (ADC_Pin_33 * 3.3) / (4095);
+      currentLine = String(Voltage_Pin_33);
+      client.println(currentLine);
+      delay(1000);
+    }
 
-  ADC_Pin_32 = analogRead(Pin_32);
-  Voltage_Pin_32 = (ADC_Pin_32 * 3.3) / (4095);
-  Serial.println(Voltage_Pin_32);
-
-  ADC_Pin_35 = analogRead(Pin_35);
-  Voltage_Pin_35 = (ADC_Pin_35 * 3.3) / (4095);
-  Serial.println(Voltage_Pin_35);
-
-  ADC_Pin_34 = analogRead(Pin_34);
-  Voltage_Pin_34 = (ADC_Pin_34 * 3.3) / (4095);
-  Serial.println(Voltage_Pin_34);
-
-  display.clearDisplay();
-  display.setTextSize(2);
-  display.setTextColor(WHITE);
-
-  // GPIO33
-  display.setCursor(0, 0);
-  display.println("33 ");
-  display.setCursor(40, 0);
-  display.print(Voltage_Pin_33);
-  display.setCursor(110, 0);
-  display.print("V");
-
-  // GPIO32
-  display.setCursor(0, 17);
-  display.println("32 ");
-  display.setCursor(40, 17);
-  display.print(Voltage_Pin_32);
-  display.setCursor(110, 17);
-  display.print("V");
-
-  // GPIO35
-  display.setCursor(0, 34);
-  display.println("35 ");
-  display.setCursor(40, 34);
-  display.print(Voltage_Pin_35);
-  display.setCursor(110, 34);
-  display.print("V");
-
-  // GPIO34
-  display.setCursor(0, 51);
-  display.println("34 ");
-  display.setCursor(40, 51);
-  display.print(Voltage_Pin_34);
-  display.setCursor(110, 51);
-  display.print("V");
-
-  display.display();
-  delay(5000);
+    client.stop();
+    // Serial.println("Client Disconnected.");
+  }
 }
+
+// ADC_Pin_33 = analogRead(Pin_33);
+// Voltage_Pin_33 = (ADC_Pin_33 * 3.3) / (4095);
+// Serial.println(Voltage_Pin_33);
+
+// ADC_Pin_32 = analogRead(Pin_32);
+// Voltage_Pin_32 = (ADC_Pin_32 * 3.3) / (4095);
+// Serial.println(Voltage_Pin_32);
+
+// ADC_Pin_35 = analogRead(Pin_35);
+// Voltage_Pin_35 = (ADC_Pin_35 * 3.3) / (4095);
+// Serial.println(Voltage_Pin_35);
+
+// ADC_Pin_34 = analogRead(Pin_34);
+// Voltage_Pin_34 = (ADC_Pin_34 * 3.3) / (4095);
+// Serial.println(Voltage_Pin_34);
+
+// display.clearDisplay();
+// display.setTextSize(2);
+// display.setTextColor(WHITE);
+
+// // GPIO33
+// display.setCursor(0, 0);
+// display.println("33 ");
+// display.setCursor(40, 0);
+// display.print(Voltage_Pin_33);
+// display.setCursor(110, 0);
+// display.print("V");
+
+// // GPIO32
+// display.setCursor(0, 17);
+// display.println("32 ");
+// display.setCursor(40, 17);
+// display.print(Voltage_Pin_32);
+// display.setCursor(110, 17);
+// display.print("V");
+
+// // GPIO35
+// display.setCursor(0, 34);
+// display.println("35 ");
+// display.setCursor(40, 34);
+// display.print(Voltage_Pin_35);
+// display.setCursor(110, 34);
+// display.print("V");
+
+// // GPIO34
+// display.setCursor(0, 51);
+// display.println("34 ");
+// display.setCursor(40, 51);
+// display.print(Voltage_Pin_34);
+// display.setCursor(110, 51);
+// display.print("V");
+
+// display.display();
+// delay(5000);
