@@ -179,6 +179,7 @@ void loop(void)
     display.setCursor(0, 0);
     display.println("Client!");
     display.display();
+     delay(2000);
 
     while (client.connected())
     {
@@ -192,6 +193,7 @@ void loop(void)
     display.setCursor(0, 0);
     display.println("Client stopped!");
     display.display();
+    delay(2000);
 
   }
 
