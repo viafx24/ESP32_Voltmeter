@@ -123,7 +123,8 @@ void Compute_Display_Voltage()
   display.setCursor(0, 0);
   display.println("33 ");
   display.setCursor(40, 0);
-  display.print(Voltage_Pin_33);
+  display.print(ADC_Pin_33);
+//  display.print(Voltage_Pin_33);
   display.setCursor(110, 0);
   display.print("V");
 
@@ -135,7 +136,8 @@ void Compute_Display_Voltage()
   display.setCursor(0, 17);
   display.println("32 ");
   display.setCursor(40, 17);
-  display.print(Voltage_Pin_32);
+  display.print(ADC_Pin_32);
+//  display.print(Voltage_Pin_32);
   display.setCursor(110, 17);
   display.print("V");
 
@@ -147,7 +149,8 @@ void Compute_Display_Voltage()
   display.setCursor(0, 34);
   display.println("35 ");
   display.setCursor(40, 34);
-  display.print(Voltage_Pin_35);
+  display.print(ADC_Pin_35);
+ // display.print(Voltage_Pin_35);
   display.setCursor(110, 34);
   display.print("V");
 
@@ -159,7 +162,8 @@ void Compute_Display_Voltage()
   display.setCursor(0, 51);
   display.println("34 ");
   display.setCursor(40, 51);
-  display.print(Voltage_Pin_34);
+  display.print(ADC_Pin_34);
+ // display.print(Voltage_Pin_34);
   display.setCursor(110, 51);
   display.print("V");
 
