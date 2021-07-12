@@ -117,14 +117,19 @@ void Compute_Display_Voltage()
 
   // GPIO33
 
+  analogReadResolution(11);
+  //analogSetAttenuation(ADC_6db);
   ADC_Pin_33 = analogRead(Pin_33);
-  Voltage_Pin_33 = (((ADC_Pin_33 * 3.3) / (4095)) * (9.96 + 0.99)) / 0.99;
+  //Voltage_Pin_33 = (((ADC_Pin_33 * 3.3) / (4095)) * (9.96 + 0.99)) / 0.99;
+  //Voltage_Pin_33 = (((ADC_Pin_33 * 3.3) / (2047)) * (9.96 + 0.99)) / 0.99;
+  //Voltage_Pin_33 = (((ADC_Pin_33 * 3.3) / (2047)) * (9.96 + 0.99)) / 9.96;
+  Voltage_Pin_33 = (((ADC_Pin_33 * 2.6) / (2047)) * (9.96 + 0.99)) / 9.96;
 
   display.setCursor(0, 0);
   display.println("33 ");
   display.setCursor(40, 0);
-  display.print(ADC_Pin_33);
-//  display.print(Voltage_Pin_33);
+  //display.print(ADC_Pin_33);
+  display.print(Voltage_Pin_33);
   display.setCursor(110, 0);
   display.print("V");
 
