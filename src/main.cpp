@@ -4,6 +4,22 @@
 
 Adafruit_ADS1115 ads1115;
 
+
+const int Pin_33 = 33;
+const int Pin_32 = 32;
+const int Pin_35 = 35;
+const int Pin_34 = 34;
+
+int ADC_Pin_33 = 0;
+int ADC_Pin_32 = 0;
+int ADC_Pin_35 = 0;
+int ADC_Pin_34 = 0;
+
+float Voltage_Pin_33 = 0;
+float Voltage_Pin_32 = 0;
+float Voltage_Pin_35 = 0;
+float Voltage_Pin_34 = 0;
+
 void setup(void)
 {
 
@@ -27,7 +43,7 @@ void loop(void)
   // voltage_2 = (adc2 * 0.1875) / 1000;
   // voltage_3 = (adc3 * 0.1875) / 1000;
 
-  voltage_0 = adc0.getMilliVolts();
+  voltage_0 = ads1115.computeVolts(adc0);
 
   Serial.print("ADS1115: ");
   Serial.print(adc0, 7);
@@ -48,7 +64,7 @@ void loop(void)
 
   // GPIO34
   ADC_Pin_34 = analogRead(Pin_34);
-  Voltage_Pin_34 = (((ADC_Pin_34 * 3.3) / (4095));
+  Voltage_Pin_34 = (ADC_Pin_34 * 3.3) / 4095;
   
   //Voltage_Pin_34 = (((ADC_Pin_34 * 3.3) / (4095)) * (116.7 + 9.96)) / 9.96;
 
