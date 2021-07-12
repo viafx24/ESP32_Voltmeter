@@ -51,6 +51,8 @@ float Voltage_Pin_32 = 0;
 float Voltage_Pin_35 = 0;
 float Voltage_Pin_34 = 0;
 
+String Send_Data_Line;
+
 void setup(void)
 {
 
@@ -107,27 +109,94 @@ void setup(void)
   delay(5000);
 }
 
+void Compute_Display_Voltage()
+{
+  display.clearDisplay();
+  display.setTextSize(2);
+  display.setTextColor(WHITE);
+
+  // GPIO33
+
+  ADC_Pin_33 = analogRead(Pin_33);
+  Voltage_Pin_33 = (((ADC_Pin_33 * 3.3) / (4095)) * (9.96 + 0.99)) / 0.99;
+
+  display.setCursor(0, 0);
+  display.println("33 ");
+  display.setCursor(40, 0);
+  display.print(Voltage_Pin_33);
+  display.setCursor(110, 0);
+  display.print("V");
+
+  // GPIO32
+
+  ADC_Pin_32 = analogRead(Pin_32);
+  Voltage_Pin_32 = (((ADC_Pin_32 * 3.3) / (4095)) * (18.28 + 2.19)) / 2.19;
+
+  display.setCursor(0, 17);
+  display.println("32 ");
+  display.setCursor(40, 17);
+  display.print(Voltage_Pin_32);
+  display.setCursor(110, 17);
+  display.print("V");
+
+  // GPIO35
+
+  ADC_Pin_35 = analogRead(Pin_35);
+  Voltage_Pin_35 = (((ADC_Pin_35 * 3.3) / (4095)) * (38.3 + 3.28)) / 3.28;
+
+  display.setCursor(0, 34);
+  display.println("35 ");
+  display.setCursor(40, 34);
+  display.print(Voltage_Pin_35);
+  display.setCursor(110, 34);
+  display.print("V");
+
+  // GPIO34
+
+  ADC_Pin_34 = analogRead(Pin_34);
+  Voltage_Pin_34 = (((ADC_Pin_34 * 3.3) / (4095)) * (116.7 + 9.96)) / 9.96;
+
+  display.setCursor(0, 51);
+  display.println("34 ");
+  display.setCursor(40, 51);
+  display.print(Voltage_Pin_34);
+  display.setCursor(110, 51);
+  display.print("V");
+
+  display.display();
+
+  Send_Data_Line = String(millis()) + ',' + String(Voltage_Pin_33) + ',' + String(Voltage_Pin_32) + ',' + String(Voltage_Pin_35) + ',' + String(Voltage_Pin_34) + ',';
+}
+
 void loop(void)
 {
+
   WiFiClient client = server_2.available(); // listen for incoming clients
 
   if (client)
-  { // if you get a client,
-    // Serial.println("New Client."); // print a message out the serial port
-    String currentLine = "";
+  {
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    display.println("Client!");
+    display.display();
 
     while (client.connected())
-    { // loop while the client's connected
-      ADC_Pin_33 = analogRead(Pin_33);
-      Voltage_Pin_33 = (ADC_Pin_33 * 3.3) / (4095);
-      currentLine = String(Voltage_Pin_33);
-      client.println(currentLine);
+    {
+      Compute_Display_Voltage();
+      client.println(Send_Data_Line);
       delay(1000);
     }
 
     client.stop();
-    // Serial.println("Client Disconnected.");
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    display.println("Client stopped!");
+    display.display();
+
   }
+
+  Compute_Display_Voltage();
+  delay(1000);
 }
 
 // ADC_Pin_33 = analogRead(Pin_33);
