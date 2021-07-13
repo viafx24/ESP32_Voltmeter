@@ -29,9 +29,11 @@ float Voltage_Pin_34 = 0;
 
 float Corrected_Voltage_Pin_34;
 
-int16_t adc0, adc1, adc2, adc3;
+uint16_t adc0, adc1, adc2, adc3;
 
 float voltage_0, voltage_1, voltage_2, voltage_3;
+
+float voltage_0_bis;
 
 float Corrected_voltage_0;
 
@@ -44,24 +46,27 @@ void setup(void)
 
 void loop(void)
 {
-  for (uint8_t i = 0; i < 256; i++)
+  for (uint8_t i = 6; i < 250; i++)
   {
     dacWrite(25, i);
 
     adc0 = ads1115.readADC_SingleEnded(0);
     voltage_0 = ads1115.computeVolts(adc0);
+    voltage_0_bis = (adc0 * 0.1875) / 1000;
     //Corrected_voltage_0 = (voltage_0 * (9.96 + 0.99)) / 0.99;
 
   //  Serial.print("ADS1115: ");
     Serial.print(i);
     Serial.print(",");
-    Serial.print(adc0, 7);
+    Serial.print(adc0);
     Serial.print(",");
     Serial.print(voltage_0, 7);
+    //Serial.print(voltage_0_bis, 7);
     // Serial.print(",");
     // Serial.println(Corrected_voltage_0);
 
     ADC_Pin_34 = analogRead(Pin_34);
+ //   Voltage_Pin_34 = (ADC_Pin_34 * 3.18) / 4095 + 0.081;
     Voltage_Pin_34 = (ADC_Pin_34 * 3.3) / 4095;
     //Corrected_Voltage_Pin_34 = (((ADC_Pin_34 * 3.3) / 4095) * (9.96 + 0.99)) / (0.99);
  //   Serial.print("ESP GPIO34: ");
@@ -69,10 +74,10 @@ void loop(void)
     Serial.print(",");
     Serial.print(ADC_Pin_34);
     Serial.print(",");
-    Serial.println(Voltage_Pin_34);
+    Serial.println(Voltage_Pin_34,7);
     // Serial.print(",");
     // Serial.println(Corrected_Voltage_Pin_34);
 
-    delay(100);
+    delay(10);
   }
 }
