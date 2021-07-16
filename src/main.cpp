@@ -34,6 +34,8 @@ uint16_t adc0, adc1, adc2, adc3;
 
 uint16_t adc0_Corrected, adc1_Corrected, adc2_Corrected, adc3_Corrected;
 
+float Voltage_Bridge_ADC0, Voltage_Bridge_ADC_Pin_34,Corrected_Voltage_ADC0,Corrected_Voltage_ADC_Pin_34;
+
 uint16_t average(uint16_t *array, uint8_t len) // assuming array is int.
 {
   long sum = 0L; // sum will be larger than an item, long for safety.
@@ -73,7 +75,7 @@ Corrected_Voltage_ADC0 = (Voltage_Bridge_ADC0 * (99100 + 9960)) / 9960;
 Corrected_Voltage_ADC_Pin_34 = (Voltage_Bridge_ADC_Pin_34 * (99100 + 9960)) / 9960;
 
 
-    Serial.print(i);
+    Serial.print(i+1);// adapted for matlab indexing
     Serial.print(",");
     Serial.print(adc0_Corrected);
     Serial.print(",");
@@ -86,8 +88,6 @@ Corrected_Voltage_ADC_Pin_34 = (Voltage_Bridge_ADC_Pin_34 * (99100 + 9960)) / 99
     Serial.print(Corrected_Voltage_ADC0,4);
     Serial.print(",");
     Serial.println(Corrected_Voltage_ADC_Pin_34,4);
-
-
 
 
     delay(10);
