@@ -17,7 +17,9 @@ const int Pin_32 = 32;
 const int Pin_35 = 35;
 const int Pin_34 = 34;
 
-const uint8_t Number_Samples = 32;
+const uint8_t Number_Samples = 255;
+
+const uint8_t Offset = 159;
 
 uint16_t ADC_Pin_33, ADC_Pin_32, ADC_Pin_35, ADC_Pin_34;
 
@@ -54,40 +56,20 @@ void loop(void)
     dacWrite(25, i);
 
     adc0_Corrected = (ads1115.readADC_SingleEnded(0) * (6.144 / 3.3) * pow(2, 12)) / pow(2, 15);
-    adc1_Corrected = (ads1115.readADC_SingleEnded(1) * (6.144 / 3.3) * pow(2, 12)) / pow(2, 15);
-    adc2_Corrected = (ads1115.readADC_SingleEnded(2) * (6.144 / 3.3) * pow(2, 12)) / pow(2, 15);
-    adc3_Corrected = (ads1115.readADC_SingleEnded(3) * (6.144 / 3.3) * pow(2, 12)) / pow(2, 15);
 
-    for (uint8_t j = 0; j < 32; j++)
+
+    for (uint8_t j = 0; j < Number_Samples; j++) // 32 à la base semblait suffisant.
     {
-      ADC_Pin_33_Array[j] = analogRead(Pin_33);
-      ADC_Pin_32_Array[j] = analogRead(Pin_32);
-      ADC_Pin_35_Array[j] = analogRead(Pin_35);
       ADC_Pin_34_Array[j] = analogRead(Pin_34);
     }
 
-    ADC_Pin_33_Average = average(ADC_Pin_33_Array, Number_Samples);
-    ADC_Pin_32_Average = average(ADC_Pin_32_Array, Number_Samples);
-    ADC_Pin_35_Average = average(ADC_Pin_35_Array, Number_Samples);
-    ADC_Pin_34_Average = average(ADC_Pin_34_Array, Number_Samples);
+    ADC_Pin_34_Average = average(ADC_Pin_34_Array, Number_Samples) + Offset;
 
     Serial.print(i);
     Serial.print(",");
-    Serial.print(adc0_Corrected);
-    Serial.print(",");
-    Serial.print(adc1_Corrected);
-    Serial.print(",");
-    Serial.print(adc2_Corrected);
-    Serial.print(",");
-    Serial.print(adc3_Corrected);
-    Serial.print(",");
-    Serial.print(ADC_Pin_33_Average);
-    Serial.print(",");
-    Serial.print(ADC_Pin_32_Average);
-    Serial.print(",");
-    Serial.print(ADC_Pin_35_Average);
-    Serial.print(",");
-    Serial.println(ADC_Pin_34_Average);
+    Serial.println(adc0_Corrected - ADC_Pin_34_Average);
+
+
 
 
     delay(10);
