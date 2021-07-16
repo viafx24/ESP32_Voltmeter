@@ -31,16 +31,13 @@ void loop(void)
       Serial.println("Count file open failed on read.");
     } else {
       while(f.available()) {
-        //Lets read line by line from the file
+
         String line = f.readStringUntil('\n');
-      //  curCnt = line.toInt();
-      //  Serial.print("Program has run ");
+
         Serial.println(line);
-      //  Serial.print(" times  ");
-      //  break; //if left in, we'll just read the first line then break out of the while.
+
 
       } 
-    //delay(1000);
       f.close();
     }
 }
