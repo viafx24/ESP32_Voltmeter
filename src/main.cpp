@@ -63,11 +63,12 @@ void loop(void)
       ADC_Pin_34_Array[j] = analogRead(Pin_34);
     }
 
-    ADC_Pin_34_Average = average(ADC_Pin_34_Array, Number_Samples) + Offset;
+    ADC_Pin_34_Average = average(ADC_Pin_34_Array, Number_Samples); //+ Offset;
 
     Serial.print(i);
     Serial.print(",");
-    Serial.println(adc0_Corrected - ADC_Pin_34_Average);
+   // Serial.println(adc0_Corrected - ADC_Pin_34_Average);
+    Serial.println(ADC_Pin_34_Average);
 
 
 
