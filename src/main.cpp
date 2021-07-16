@@ -67,7 +67,8 @@ void loop(void)
 
     Serial.print(i);
     Serial.print(",");
-    Serial.println(adc0_Corrected - ADC_Pin_34_Average);
+    Serial.println(adc0_Corrected)
+     - ADC_Pin_34_Average);
 
 
 
