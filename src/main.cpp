@@ -51,7 +51,7 @@ void setup(void)
 
 void loop(void)
 {
-  for (uint8_t i = 6; i < 250; i++)
+  for (uint8_t i = 0; i < 256; i++)
   {
     dacWrite(25, i);
 
