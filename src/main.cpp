@@ -19,7 +19,6 @@ const int Pin_34 = 34;
 
 const uint8_t Number_Samples = 255;
 
-const uint8_t Offset = 159;
 
 uint16_t ADC_Pin_33, ADC_Pin_32, ADC_Pin_35, ADC_Pin_34;
 
@@ -71,23 +70,22 @@ void loop(void)
 Voltage_Bridge_ADC0=adc0_Corrected * 3.3 / 4096;
 Voltage_Bridge_ADC_Pin_34=ADC_Pin_34_Average * 3.3 / 4096;
 
-Corrected_Voltage_ADC0 = (Voltage_Bridge_ADC0 * (99100 + 9960)) / 9960;
-Corrected_Voltage_ADC_Pin_34 = (Voltage_Bridge_ADC_Pin_34 * (99100 + 9960)) / 9960;
+// Corrected_Voltage_ADC0 = (Voltage_Bridge_ADC0 * (99100 + 9960)) / 9960;
+// Corrected_Voltage_ADC_Pin_34 = (Voltage_Bridge_ADC_Pin_34 * (99100 + 9960)) / 9960;
 
 
     Serial.print(i+1);// adapted for matlab indexing
     Serial.print(",");
-    Serial.print(adc0_Corrected);
-    Serial.print(",");
-    Serial.print(ADC_Pin_34_Average);
-    Serial.print(",");
+    // Serial.print(adc0_Corrected);
+    // Serial.print(",");
+    // Serial.print(ADC_Pin_34_Average);
+    // Serial.print(",");
     Serial.print(Voltage_Bridge_ADC0,4);
     Serial.print(",");
     Serial.print(Voltage_Bridge_ADC_Pin_34,4);
     Serial.print(",");
-    Serial.print(Corrected_Voltage_ADC0,4);
-    Serial.print(",");
-    Serial.println(Corrected_Voltage_ADC_Pin_34,4);
+    Serial.print(Voltage_Bridge_ADC_Pin_34,4);
+ 
 
 
     delay(10);
