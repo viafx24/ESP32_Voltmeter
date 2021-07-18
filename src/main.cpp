@@ -9,7 +9,58 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <Adafruit_I2CDevice.h> // Guillaume add
+#include "SPIFFS.h"
 
+
+void setup(void)
+{
+
+  Serial.begin(115200);
+
+  if (!SPIFFS.begin())
+  {
+    Serial.println("An Error has occurred while mounting SPIFFS");
+  }
+}
+
+void loop(void)
+{
+  File f = SPIFFS.open("/Data.txt", "r");
+  Count=0;
+
+  if (!f)
+  {
+    Serial.println("Count file open failed on read.");
+  }
+  else
+  {
+    while (f.available())
+    {
+
+      String line = f.readStringUntil(',');
+      //Voltage = line.toFloat();
+      MyADS1115array[Count] = line.toFloat();
+      Count++;
+    }
+  }
+  f.close();
+
+  delay(5000);
+
+  Serial.println(MyADS1115array[0],4);
+  Serial.println(MyADS1115array[1],4);
+  Serial.println(MyADS1115array[2],4);
+  Serial.println(MyADS1115array[1000],4);
+  Serial.println(MyADS1115array[2000],4);
+  Serial.println(MyADS1115array[3000],4);
+  Serial.println(MyADS1115array[4086],4);
+  Serial.println(MyADS1115array[4087],4);
+  Serial.println(MyADS1115array[4095],4);
+
+  delay(5000);
+}
+
+// measure parameter
 Adafruit_ADS1115 ads1115;
 
 const int Pin_33 = 33;
@@ -34,6 +85,11 @@ uint16_t adc0, adc1, adc2, adc3;
 uint16_t adc0_Corrected, adc1_Corrected, adc2_Corrected, adc3_Corrected;
 
 float Voltage_Bridge_ADC0, Voltage_Bridge_ADC_Pin_34,Corrected_Voltage_ADC0,Corrected_Voltage_ADC_Pin_34;
+
+// parameter for retrieving result from table
+
+
+
 
 uint16_t average(uint16_t *array, uint8_t len) // assuming array is int.
 {
