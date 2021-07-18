@@ -17,23 +17,9 @@
 #include <string>
 #include <map>
 
-using namespace std;
-
-// map<int16_t, float> Look_up_Table;
-
-// string ADC_Integer_String, Voltage_String;
-
-int ADC_Integer;
-
-float Voltage;
-
-string Line;
-
-uint16_t Count = 1;
-uint16_t Count_2 =0;
-
-const uint16_t Size_Array= 4096;
-
+String Line;
+uint16_t Count;
+const uint16_t Size_Array = 4096;
 float MyADS1115array[Size_Array];
 
 void setup(void)
@@ -50,6 +36,7 @@ void setup(void)
 void loop(void)
 {
   File f = SPIFFS.open("/Data.txt", "r");
+  Count=0;
 
   if (!f)
   {
@@ -61,93 +48,24 @@ void loop(void)
     {
 
       String line = f.readStringUntil(',');
-      //Serial.println(Count);
-
-      if (Count % 2 == 0)
-      {
-        Voltage = line.toFloat();
-      //  Serial.println(line);
-      //  Serial.println(Voltage,4);
-        MyADS1115array[Count_2]=Voltage;
-        Count++;
-      }
-      else
-      {
-       // ADC_Integer = line.toInt();
-      //  Serial.println(line);
-      //  Serial.print(ADC_Integer);
-      //  Serial.print(',');
-        Count++;
-      }
-
-    
-
-      delay(1);
+      //Voltage = line.toFloat();
+      MyADS1115array[Count] = line.toFloat();
+      Count++;
     }
-    f.close();
   }
+  f.close();
 
-delay(5000);
+  delay(5000);
 
-Serial.println(MyADS1115array[0]);
-Serial.println(MyADS1115array[1]);
-Serial.println(MyADS1115array[2]);
-Serial.println(MyADS1115array[1000]);
-Serial.println(MyADS1115array[2000]);
-Serial.println(MyADS1115array[3000]);
-Serial.println(MyADS1115array[4086]);
-Serial.println(MyADS1115array[4087]);
-Serial.println(MyADS1115array[4095]);
+  Serial.println(MyADS1115array[0],4);
+  Serial.println(MyADS1115array[1],4);
+  Serial.println(MyADS1115array[2],4);
+  Serial.println(MyADS1115array[1000],4);
+  Serial.println(MyADS1115array[2000],4);
+  Serial.println(MyADS1115array[3000],4);
+  Serial.println(MyADS1115array[4086],4);
+  Serial.println(MyADS1115array[4087],4);
+  Serial.println(MyADS1115array[4095],4);
 
-delay(5000);
+  delay(5000);
 }
-
-// #include <iostream>
-// #include <fstream>
-// #include <sstream>
-// #include <string>
-// #include <map>
-// #include <iterator>
-// using namespace std;
-// int main()
-// {
-//     map<int16_t, float> Look_up_Table;
-//     ifstream myFileStream("Data.txt");
-//     if (!myFileStream.is_open())
-//     {
-//         cout << "File failed to open" << endl;
-//         return 0;
-//     }
-//     string ADC_Integer_String, Voltage_String;
-//     int16_t ADC_Integer;
-//     float Voltage;
-//     string Line;
-//     while (getline(myFileStream, Line))
-//     {
-//         stringstream ss(Line);
-//         getline(ss, ADC_Integer_String, ',');
-//         getline(ss, Voltage_String, ',');
-//         ADC_Integer = stoi(ADC_Integer_String);
-//         Voltage = stof(Voltage_String);
-//         Look_up_Table[ADC_Integer] = Voltage;
-//     }
-//     myFileStream.close();
-//     // for (int i=1;i<4083;i++)
-//     // {
-//     //     cout << i << ','<< Look_up_Table[i] << endl;
-//     // }
-//     for (map<int16_t, float>::iterator it = Look_up_Table.begin(); it != Look_up_Table.end(); ++it)
-//     {
-//         cout << it->first << "," << it->second << endl;
-//     }
-//     map<int16_t, float>::iterator Find_Voltage = Look_up_Table.find(3073);
-//     if (Find_Voltage == Look_up_Table.end())
-//     {
-//         cout << "Voltage not found" << endl;
-//     }
-//     else
-//     {
-//         cout << "The corrected voltage is " << Find_Voltage->second << endl;
-//     }
-//     return 0;
-// }
