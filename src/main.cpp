@@ -11,12 +11,6 @@
 #include <Adafruit_I2CDevice.h> // Guillaume add
 #include "SPIFFS.h"
 
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <string>
-#include <map>
-
 String Line;
 uint16_t Count;
 const uint16_t Size_Array = 4096;
