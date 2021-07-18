@@ -30,6 +30,11 @@ float Voltage;
 string Line;
 
 uint16_t Count = 1;
+uint16_t Count_2 =0;
+
+const uint16_t Size_Array= 4096;
+
+float MyADS1115array[Size_Array];
 
 void setup(void)
 {
@@ -61,23 +66,40 @@ void loop(void)
       if (Count % 2 == 0)
       {
         Voltage = line.toFloat();
-        Serial.println(line);
-        Serial.println(Voltage,4);
+      //  Serial.println(line);
+      //  Serial.println(Voltage,4);
+        MyADS1115array[Count_2]=Voltage;
         Count++;
       }
       else
       {
-        ADC_Integer = line.toInt();
-        Serial.println(line);
-        Serial.println(ADC_Integer);
-       // Serial.print(',');
+       // ADC_Integer = line.toInt();
+      //  Serial.println(line);
+      //  Serial.print(ADC_Integer);
+      //  Serial.print(',');
         Count++;
       }
 
-      delay(100);
+    
+
+      delay(1);
     }
     f.close();
   }
+
+delay(5000);
+
+Serial.println(MyADS1115array[0]);
+Serial.println(MyADS1115array[1]);
+Serial.println(MyADS1115array[2]);
+Serial.println(MyADS1115array[1000]);
+Serial.println(MyADS1115array[2000]);
+Serial.println(MyADS1115array[3000]);
+Serial.println(MyADS1115array[4086]);
+Serial.println(MyADS1115array[4087]);
+Serial.println(MyADS1115array[4095]);
+
+delay(5000);
 }
 
 // #include <iostream>
