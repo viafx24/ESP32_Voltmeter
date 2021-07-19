@@ -28,7 +28,7 @@ uint16_t ADC_Pin_34_Array[Number_Samples];
 
 uint16_t ADC_Pin_33_Average, ADC_Pin_32_Average, ADC_Pin_35_Average, ADC_Pin_34_Average;
 
-uint16_t adc0_Corrected, adc1_Corrected, adc2_Corrected, adc3_Corrected;
+double adc0_Corrected, adc1_Corrected, adc2_Corrected, adc3_Corrected;
 
 double Voltage_Bridge_ADC0, Voltage_Bridge_ADC1;
 double Corrected_Voltage_ADC0, Corrected_Voltage_ADC1;
@@ -46,17 +46,28 @@ double Current_ADC_ESP32_Average;
 String Line;
 uint16_t Count;
 const uint16_t Size_Array = 4096;
-float MyADS1115array[Size_Array];
+double MyADS1115array[Size_Array];
 
 // the only function of the code
 
-uint16_t average(uint16_t *array, uint8_t len) // assuming array is int.
+double average_double(double *array, uint8_t len) // assuming array is int.
+{
+  double sum = 0; // sum will be larger than an item, long for safety.
+  for (int i = 0; i < len; i++)
+    sum += array[i];
+  return sum / len; // return an int not a float
+}
+
+uint16_t average_uint16(uint16_t *array, uint8_t len) // assuming array is int.
 {
   long sum = 0L; // sum will be larger than an item, long for safety.
   for (int i = 0; i < len; i++)
     sum += array[i];
   return sum / len; // return an int not a float
 }
+
+
+
 
 void setup(void)
 {
@@ -86,7 +97,7 @@ void setup(void)
 
       String line = f.readStringUntil(',');
       //Voltage = line.toFloat();
-      MyADS1115array[Count] = line.toFloat();
+      MyADS1115array[Count] = line.toDouble();
       Count++;
     }
   }
@@ -107,8 +118,8 @@ void loop(void)
       ADC_Pin_35_Array[j] = analogRead(Pin_35);
     }
 
-    ADC_Pin_34_Average = average(ADC_Pin_34_Array, Number_Samples);
-    ADC_Pin_35_Average = average(ADC_Pin_35_Array, Number_Samples);
+    ADC_Pin_34_Average = average_uint16(ADC_Pin_34_Array, Number_Samples);
+    ADC_Pin_35_Average = average_uint16(ADC_Pin_35_Array, Number_Samples);
 
     Voltage_Bridge_ADC0 = adc0_Corrected * 3.3 / 4096;
     Voltage_Bridge_ADC1 = adc1_Corrected * 3.3 / 4096;
@@ -126,8 +137,8 @@ void loop(void)
     Current_ADC_ESP32_Samples[k] = (Corrected_Voltage_ADC_Pin_34 - Corrected_Voltage_ADC_Pin_35) / 0.1;
   }
 
-    Current_ADS1115_Average = average(Current_ADS1115_Samples, Number_Samples);
-    Current_ADC_ESP32_Average = average(Current_ADC_ESP32_Samples, Number_Samples);
+    Current_ADS1115_Average = average_double(Current_ADS1115_Samples, Number_Samples);
+    Current_ADC_ESP32_Average = average_double(Current_ADC_ESP32_Samples, Number_Samples);
 
   // Voltage at the bridge
 
@@ -159,5 +170,5 @@ void loop(void)
   Serial.print(",");
   Serial.println(Current_ADC_ESP32_Average, 4);
 
-  delay(500);
+  delay(100);
 }
