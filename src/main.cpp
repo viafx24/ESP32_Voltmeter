@@ -112,10 +112,10 @@ void loop(void)
   Voltage_Bridge_ADC_Pin_34 = MyADS1115array[ADC_Pin_34_Average];
 
   Corrected_Voltage_ADC0 = (Voltage_Bridge_ADC0 * (97700 + 9960)) / 9960;
-  Corrected_Voltage_ADC1 = (Voltage_Bridge_ADC0 * (97700 + 9960)) / 9960;
+  Corrected_Voltage_ADC1 = (Voltage_Bridge_ADC1 * (97700 + 9960)) / 9960;
 
   Corrected_Voltage_ADC_Pin_34 = (Voltage_Bridge_ADC_Pin_34 * (97700 + 9960)) / 9960;
-  Corrected_Voltage_ADC_Pin_35 = (Voltage_Bridge_ADC_Pin_34 * (97700 + 9960)) / 9960;
+  Corrected_Voltage_ADC_Pin_35 = (Voltage_Bridge_ADC_Pin_35 * (97700 + 9950)) / 9950;
 
   Current_ADS1115 = (Corrected_Voltage_ADC0 - Corrected_Voltage_ADC1) / 0.1;
 
@@ -151,5 +151,5 @@ void loop(void)
   Serial.print(",");
   Serial.println(Current_ADC_ESP32, 4);
 
-  delay(10);
+  delay(1000);
 }
