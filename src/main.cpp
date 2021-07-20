@@ -19,12 +19,16 @@ const int Pin_32 = 32;
 const int Pin_35 = 35;
 const int Pin_34 = 34;
 
-const uint8_t Number_Samples = 255;
+const uint8_t Number_Samples_ADC = 255;
+const uint8_t Number_Samples_Current = 1;
 
-uint16_t ADC_Pin_33_Array[Number_Samples];
-uint16_t ADC_Pin_32_Array[Number_Samples];
-uint16_t ADC_Pin_35_Array[Number_Samples];
-uint16_t ADC_Pin_34_Array[Number_Samples];
+
+
+
+uint16_t ADC_Pin_33_Array[Number_Samples_ADC];
+uint16_t ADC_Pin_32_Array[Number_Samples_ADC];
+uint16_t ADC_Pin_35_Array[Number_Samples_ADC];
+uint16_t ADC_Pin_34_Array[Number_Samples_ADC];
 
 uint16_t ADC_Pin_33_Average, ADC_Pin_32_Average, ADC_Pin_35_Average, ADC_Pin_34_Average;
 
@@ -35,8 +39,8 @@ double Corrected_Voltage_ADC0, Corrected_Voltage_ADC1;
 double Voltage_Bridge_ADC_Pin_34, Voltage_Bridge_ADC_Pin_35;
 double Corrected_Voltage_ADC_Pin_34, Corrected_Voltage_ADC_Pin_35;
 
-double Current_ADS1115_Samples[Number_Samples];
-double Current_ADC_ESP32_Samples[Number_Samples];
+double Current_ADS1115_Samples[Number_Samples_Current];
+double Current_ADC_ESP32_Samples[Number_Samples_Current];
 
 double Current_ADS1115_Average;
 double Current_ADC_ESP32_Average;
@@ -106,20 +110,20 @@ void setup(void)
 
 void loop(void)
 {
-  for (uint8_t k = 0; k < Number_Samples; k++) // 32 à la base semblait suffisant.
+  for (uint8_t k = 0; k < Number_Samples_Current; k++) // 32 à la base semblait suffisant.
   {
 
     adc0_Corrected = (ads1115.readADC_SingleEnded(0) * (6.144 / 3.3) * pow(2, 12)) / pow(2, 15);
     adc1_Corrected = (ads1115.readADC_SingleEnded(1) * (6.144 / 3.3) * pow(2, 12)) / pow(2, 15);
 
-    for (uint8_t j = 0; j < Number_Samples; j++) // 32 à la base semblait suffisant.
+    for (uint8_t j = 0; j < Number_Samples_ADC; j++) // 32 à la base semblait suffisant.
     {
       ADC_Pin_34_Array[j] = analogRead(Pin_34);
       ADC_Pin_35_Array[j] = analogRead(Pin_35);
     }
 
-    ADC_Pin_34_Average = average_uint16(ADC_Pin_34_Array, Number_Samples);
-    ADC_Pin_35_Average = average_uint16(ADC_Pin_35_Array, Number_Samples);
+    ADC_Pin_34_Average = average_uint16(ADC_Pin_34_Array, Number_Samples_ADC);
+    ADC_Pin_35_Average = average_uint16(ADC_Pin_35_Array, Number_Samples_ADC);
 
     Voltage_Bridge_ADC0 = adc0_Corrected * 3.3 / 4096;
     Voltage_Bridge_ADC1 = adc1_Corrected * 3.3 / 4096;
@@ -128,17 +132,18 @@ void loop(void)
     Voltage_Bridge_ADC_Pin_34 = MyADS1115array[ADC_Pin_34_Average];
 
     Corrected_Voltage_ADC0 = (Voltage_Bridge_ADC0 * (97700 + 9960)) / 9960;
-    Corrected_Voltage_ADC1 = (Voltage_Bridge_ADC1 * (97700 + 9960)) / 9960;
+    Corrected_Voltage_ADC1 = (Voltage_Bridge_ADC1 * (97700 + 9950)) / 9950;
 
     Corrected_Voltage_ADC_Pin_34 = (Voltage_Bridge_ADC_Pin_34 * (97700 + 9960)) / 9960;
     Corrected_Voltage_ADC_Pin_35 = (Voltage_Bridge_ADC_Pin_35 * (97700 + 9950)) / 9950;
 
     Current_ADS1115_Samples[k] = (Corrected_Voltage_ADC0 - Corrected_Voltage_ADC1) / 0.1;
     Current_ADC_ESP32_Samples[k] = (Corrected_Voltage_ADC_Pin_34 - Corrected_Voltage_ADC_Pin_35) / 0.1;
+
   }
 
-    Current_ADS1115_Average = average_double(Current_ADS1115_Samples, Number_Samples);
-    Current_ADC_ESP32_Average = average_double(Current_ADC_ESP32_Samples, Number_Samples);
+    Current_ADS1115_Average = average_double(Current_ADS1115_Samples, Number_Samples_Current);
+    Current_ADC_ESP32_Average = average_double(Current_ADC_ESP32_Samples, Number_Samples_Current);
 
   // Voltage at the bridge
 
@@ -170,5 +175,4 @@ void loop(void)
   Serial.print(",");
   Serial.println(Current_ADC_ESP32_Average, 4);
 
-  delay(100);
 }
