@@ -1,7 +1,6 @@
 
 #include <Arduino.h>
 #include <Adafruit_ADS1X15.h>
-
 #include <WiFi.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
