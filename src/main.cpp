@@ -1,13 +1,13 @@
 
 #include <Arduino.h>
 #include <Adafruit_ADS1X15.h>
-#include <WiFi.h>
-#include <AsyncTCP.h>
-#include <ESPAsyncWebServer.h>
-#include <AsyncElegantOTA.h>
-#include <Adafruit_GFX.h>
+// #include <WiFi.h>
+// #include <AsyncTCP.h>
+// #include <ESPAsyncWebServer.h>
+// #include <AsyncElegantOTA.h>
+// #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#include <Adafruit_I2CDevice.h> // Guillaume add
+//#include <Adafruit_I2CDevice.h> // Guillaume add
 #include "SPIFFS.h"
 
 // measure parameter
@@ -29,7 +29,7 @@ uint16_t ADC_Pin_34_Array[Number_Samples_ADC];
 
 uint16_t ADC_Pin_33_Average, ADC_Pin_32_Average, ADC_Pin_35_Average, ADC_Pin_34_Average;
 // uint16_t Diff_ADC_Pin_34_35_Average;
-double Diff_ADC_Pin_34_35_Average;
+// double Diff_ADC_Pin_34_35_Average;
 
 double adc0_Corrected, adc1_Corrected, adc2_Corrected, adc3_Corrected;
 
@@ -43,7 +43,7 @@ double Current_ADC_ESP32_Samples[Number_Samples_Current];
 
 double Current_ADS1115_Average;
 double Current_ADC_ESP32_Average;
-double Current;
+
 
 // parameter for retrieving result from table
 
