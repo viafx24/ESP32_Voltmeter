@@ -52,13 +52,7 @@ float Current_ADC_ESP32_Average;
 
 // parameter for retrieving result from 
 
-
-
-
-
-
 String Line;
-
 uint16_t Count;
 const uint16_t Size_Array = 4096;
 float MyADS1115array[Size_Array];
