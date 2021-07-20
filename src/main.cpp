@@ -19,14 +19,14 @@ const int Pin_32 = 32;
 const int Pin_35 = 35;
 const int Pin_34 = 34;
 
-const uint16_t Number_Samples_ADC = 32;
-const uint8_t Number_Samples_Current = 255;
+const uint16_t Number_Samples_ADC = 12;
+const uint16_t Number_Samples_Current = 72;
 
-uint16_t ADC_Pin_33_Array[Number_Samples_ADC];
-uint16_t ADC_Pin_32_Array[Number_Samples_ADC];
+// uint16_t ADC_Pin_33_Array[Number_Samples_ADC];
+// uint16_t ADC_Pin_32_Array[Number_Samples_ADC];
 uint16_t ADC_Pin_35_Array[Number_Samples_ADC];
 uint16_t ADC_Pin_34_Array[Number_Samples_ADC];
-double Diff_ADC_Pin_34_35[Number_Samples_ADC];
+//double Diff_ADC_Pin_34_35[Number_Samples_ADC];
 
 uint16_t ADC_Pin_33_Average, ADC_Pin_32_Average, ADC_Pin_35_Average, ADC_Pin_34_Average;
 // uint16_t Diff_ADC_Pin_34_35_Average;
@@ -55,7 +55,7 @@ double MyADS1115array[Size_Array];
 
 // the only function of the code
 
-double average_double(double *array, uint8_t len) // assuming array is int.
+double average_double(double *array, uint16_t len) // assuming array is int.
 {
   double sum = 0; // sum will be larger than an item, long for safety.
   for (int i = 0; i < len; i++)
@@ -63,7 +63,7 @@ double average_double(double *array, uint8_t len) // assuming array is int.
   return sum / len; // return an int not a float
 }
 
-uint16_t average_uint16(uint16_t *array, uint8_t len) // assuming array is int.
+uint16_t average_uint16(uint16_t *array, uint16_t len) // assuming array is int.
 {
   long sum = 0L; // sum will be larger than an item, long for safety.
   for (int i = 0; i < len; i++)
@@ -118,12 +118,12 @@ void loop(void)
     {
       ADC_Pin_34_Array[j] = analogRead(Pin_34);
       ADC_Pin_35_Array[j] = analogRead(Pin_35);
-      Diff_ADC_Pin_34_35[j] = ADC_Pin_34_Array[j] - ADC_Pin_35_Array[j];
+   //   Diff_ADC_Pin_34_35[j] = ADC_Pin_34_Array[j] - ADC_Pin_35_Array[j];
     }
 
     ADC_Pin_34_Average = average_uint16(ADC_Pin_34_Array, Number_Samples_ADC);
     ADC_Pin_35_Average = average_uint16(ADC_Pin_35_Array, Number_Samples_ADC);
-    Diff_ADC_Pin_34_35_Average = average_double(Diff_ADC_Pin_34_35, Number_Samples_ADC);
+    //Diff_ADC_Pin_34_35_Average = average_double(Diff_ADC_Pin_34_35, Number_Samples_ADC);
 
     Voltage_Bridge_ADC0 = adc0_Corrected * 3.3 / 4096;
     Voltage_Bridge_ADC1 = adc1_Corrected * 3.3 / 4096;
@@ -144,7 +144,7 @@ void loop(void)
   Current_ADS1115_Average = average_double(Current_ADS1115_Samples, Number_Samples_Current);
   Current_ADC_ESP32_Average = average_double(Current_ADC_ESP32_Samples, Number_Samples_Current);
 
-  Current = (Diff_ADC_Pin_34_35_Average) / 0.1;
+  //Current = (Diff_ADC_Pin_34_35_Average) / 0.1;
 
   // Voltage at the bridge
 
@@ -175,14 +175,14 @@ void loop(void)
   Serial.print(",");
   Serial.print(ADC_Pin_35_Average);
   Serial.print(",");
-  Serial.print(Diff_ADC_Pin_34_35_Average);
-  Serial.print(",");
+  // Serial.print(Diff_ADC_Pin_34_35_Average);
+  // Serial.print(",");
 
   // Current computed  high side through the shunt 0.1 ohm
 
   Serial.print(Current_ADS1115_Average, 4);
   Serial.print(",");
   Serial.println(Current_ADC_ESP32_Average, 4);
-  Serial.print(",");
-  Serial.println(Current, 4);
+ // Serial.print(",");
+  //Serial.println(Current, 4);
 }
