@@ -25,43 +25,49 @@ const uint16_t Number_Samples_Current = 128;
 // uint16_t ADC_Pin_32_Array[Number_Samples_ADC];
 uint16_t ADC_Pin_35_Array[Number_Samples_ADC];
 uint16_t ADC_Pin_34_Array[Number_Samples_ADC];
-//double Diff_ADC_Pin_34_35[Number_Samples_ADC];
+//float Diff_ADC_Pin_34_35[Number_Samples_ADC];
 
 uint16_t ADC_Pin_33_Average, ADC_Pin_32_Average, ADC_Pin_35_Average, ADC_Pin_34_Average;
 // uint16_t Diff_ADC_Pin_34_35_Average;
-// double Diff_ADC_Pin_34_35_Average;
+// float Diff_ADC_Pin_34_35_Average;
 
-double adc0_Corrected, adc1_Corrected, adc2_Corrected, adc3_Corrected;
+float adc0_Corrected, adc1_Corrected, adc2_Corrected, adc3_Corrected;
 
-double Voltage_Bridge_ADC0, Voltage_Bridge_ADC1;
-double Corrected_Voltage_ADC0, Corrected_Voltage_ADC1;
-double Voltage_Bridge_ADC_Pin_34, Voltage_Bridge_ADC_Pin_35;
-double Corrected_Voltage_ADC_Pin_34, Corrected_Voltage_ADC_Pin_35;
+float Voltage_Bridge_ADC0, Voltage_Bridge_ADC1;
+float Corrected_Voltage_ADC0, Corrected_Voltage_ADC1;
+float Voltage_Bridge_ADC_Pin_34, Voltage_Bridge_ADC_Pin_35;
+float Corrected_Voltage_ADC_Pin_34, Corrected_Voltage_ADC_Pin_35;
 
-double Voltage_Bridge_ADC_Pin_34_Array[Number_Samples_Current];
-double Voltage_Bridge_ADC_Pin_35_Array[Number_Samples_Current];
+float Voltage_Bridge_ADC_Pin_34_Array[Number_Samples_Current];
+float Voltage_Bridge_ADC_Pin_35_Array[Number_Samples_Current];
 
-double Voltage_Bridge_ADC0_Array[Number_Samples_Current];
-double Voltage_Bridge_ADC1_Array[Number_Samples_Current];
+float Voltage_Bridge_ADC0_Array[Number_Samples_Current];
+float Voltage_Bridge_ADC1_Array[Number_Samples_Current];
 
-double Current_ADS1115_Samples[Number_Samples_Current];
-double Current_ADC_ESP32_Samples[Number_Samples_Current];
+float Current_ADS1115_Samples[Number_Samples_Current];
+float Current_ADC_ESP32_Samples[Number_Samples_Current];
 
-double Current_ADS1115_Average;
-double Current_ADC_ESP32_Average;
+float Current_ADS1115_Average;
+float Current_ADC_ESP32_Average;
 
-// parameter for retrieving result from table
+// parameter for retrieving result from 
+
+
+
+
+
 
 String Line;
+
 uint16_t Count;
 const uint16_t Size_Array = 4096;
-double MyADS1115array[Size_Array];
+float MyADS1115array[Size_Array];
 
 // the only function of the code
 
-double average_double(double *array, uint16_t len) // assuming array is int.
+float average_float(float *array, uint16_t len) // assuming array is int.
 {
-  double sum = 0; // sum will be larger than an item, long for safety.
+  float sum = 0; // sum will be larger than an item, long for safety.
   for (int i = 0; i < len; i++)
     sum += array[i];
   return sum / len; // return an int not a float
@@ -103,7 +109,7 @@ void setup(void)
 
       String line = f.readStringUntil(',');
       //Voltage = line.toFloat();
-      MyADS1115array[Count] = line.toDouble();
+      MyADS1115array[Count] = line.tofloat();
       Count++;
     }
   }
@@ -134,11 +140,11 @@ void loop(void)
     Voltage_Bridge_ADC1_Array[k] = adc1_Corrected * 3.3 / 4096;
   }
 
-  Voltage_Bridge_ADC0 = average_double(Voltage_Bridge_ADC0_Array, Number_Samples_Current);
-  Voltage_Bridge_ADC1 = average_double(Voltage_Bridge_ADC1_Array, Number_Samples_Current);
+  Voltage_Bridge_ADC0 = average_float(Voltage_Bridge_ADC0_Array, Number_Samples_Current);
+  Voltage_Bridge_ADC1 = average_float(Voltage_Bridge_ADC1_Array, Number_Samples_Current);
 
-  Voltage_Bridge_ADC_Pin_34 = average_double(Voltage_Bridge_ADC_Pin_34_Array, Number_Samples_Current);
-  Voltage_Bridge_ADC_Pin_35 = average_double(Voltage_Bridge_ADC_Pin_35_Array, Number_Samples_Current);
+  Voltage_Bridge_ADC_Pin_34 = average_float(Voltage_Bridge_ADC_Pin_34_Array, Number_Samples_Current);
+  Voltage_Bridge_ADC_Pin_35 = average_float(Voltage_Bridge_ADC_Pin_35_Array, Number_Samples_Current);
 
   Corrected_Voltage_ADC0 = (Voltage_Bridge_ADC0 * (97700 + 9960)) / 9960;
   Corrected_Voltage_ADC1 = (Voltage_Bridge_ADC1 * (97700 + 9950)) / 9950;
