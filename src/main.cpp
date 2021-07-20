@@ -9,6 +9,7 @@
 #include <Adafruit_SSD1306.h>
 //#include <Adafruit_I2CDevice.h> // Guillaume add
 #include "SPIFFS.h"
+#include "Statistic.h"
 
 // measure parameter
 Adafruit_ADS1115 ads1115;
@@ -18,7 +19,7 @@ const int Pin_32 = 32;
 const int Pin_35 = 35;
 const int Pin_34 = 34;
 
-const uint16_t Number_Samples_ADC = 12;
+const uint16_t Number_Samples_ADC = 64;
 const uint16_t Number_Samples_Current = 128;
 
 // uint16_t ADC_Pin_33_Array[Number_Samples_ADC];
@@ -32,17 +33,14 @@ uint16_t ADC_Pin_33_Average, ADC_Pin_32_Average, ADC_Pin_35_Average, ADC_Pin_34_
 // float Diff_ADC_Pin_34_35_Average;
 
 float adc0_Corrected, adc1_Corrected, adc2_Corrected, adc3_Corrected;
-
-float Voltage_Bridge_ADC0, Voltage_Bridge_ADC1;
 float Corrected_Voltage_ADC0, Corrected_Voltage_ADC1;
-float Voltage_Bridge_ADC_Pin_34, Voltage_Bridge_ADC_Pin_35;
 float Corrected_Voltage_ADC_Pin_34, Corrected_Voltage_ADC_Pin_35;
 
-float Voltage_Bridge_ADC_Pin_34_Array[Number_Samples_Current];
-float Voltage_Bridge_ADC_Pin_35_Array[Number_Samples_Current];
+Statistic Voltage_Bridge_ADC_Pin_34;
+Statistic Voltage_Bridge_ADC_Pin_35;
 
-float Voltage_Bridge_ADC0_Array[Number_Samples_Current];
-float Voltage_Bridge_ADC1_Array[Number_Samples_Current];
+Statistic Voltage_Bridge_ADC0;
+Statistic Voltage_Bridge_ADC1;
 
 float Current_ADS1115_Samples[Number_Samples_Current];
 float Current_ADC_ESP32_Samples[Number_Samples_Current];
@@ -81,6 +79,8 @@ void setup(void)
   Serial.begin(115200);
   ads1115.begin();
 
+
+
   // reading in data file (SPIFFS) to get all the true value of voltage for ADC integer
   // between 0 and 4095.
 
@@ -103,7 +103,7 @@ void setup(void)
 
       String line = f.readStringUntil(',');
       //Voltage = line.toFloat();
-      MyADS1115array[Count] = line.tofloat();
+      MyADS1115array[Count] = line.toFloat();
       Count++;
     }
   }
@@ -124,41 +124,46 @@ void loop(void)
     ADC_Pin_34_Average = average_uint16(ADC_Pin_34_Array, Number_Samples_ADC);
     ADC_Pin_35_Average = average_uint16(ADC_Pin_35_Array, Number_Samples_ADC);
 
-    Voltage_Bridge_ADC_Pin_34_Array[k] = MyADS1115array[ADC_Pin_34_Average];
-    Voltage_Bridge_ADC_Pin_35_Array[k] = MyADS1115array[ADC_Pin_35_Average];
+    Voltage_Bridge_ADC_Pin_34.add(MyADS1115array[ADC_Pin_34_Average]) ;  
+    Voltage_Bridge_ADC_Pin_35.add(MyADS1115array[ADC_Pin_35_Average]) ;   
 
     adc0_Corrected = (ads1115.readADC_SingleEnded(0) * (6.144 / 3.3) * pow(2, 12)) / pow(2, 15);
     adc1_Corrected = (ads1115.readADC_SingleEnded(1) * (6.144 / 3.3) * pow(2, 12)) / pow(2, 15);
 
-    Voltage_Bridge_ADC0_Array[k] = adc0_Corrected * 3.3 / 4096;
-    Voltage_Bridge_ADC1_Array[k] = adc1_Corrected * 3.3 / 4096;
+    Voltage_Bridge_ADC0.add(adc0_Corrected * 3.3 / 4096);
+    Voltage_Bridge_ADC1.add(adc1_Corrected * 3.3 / 4096);
   }
 
-  Voltage_Bridge_ADC0 = average_float(Voltage_Bridge_ADC0_Array, Number_Samples_Current);
-  Voltage_Bridge_ADC1 = average_float(Voltage_Bridge_ADC1_Array, Number_Samples_Current);
+  // Voltage_Bridge_ADC0 = average_float(Voltage_Bridge_ADC0_Array, Number_Samples_Current);
+  // Voltage_Bridge_ADC1 = average_float(Voltage_Bridge_ADC1_Array, Number_Samples_Current);
 
-  Voltage_Bridge_ADC_Pin_34 = average_float(Voltage_Bridge_ADC_Pin_34_Array, Number_Samples_Current);
-  Voltage_Bridge_ADC_Pin_35 = average_float(Voltage_Bridge_ADC_Pin_35_Array, Number_Samples_Current);
+  // Voltage_Bridge_ADC_Pin_34 = average_float(Voltage_Bridge_ADC_Pin_34_Array, Number_Samples_Current);
+  // Voltage_Bridge_ADC_Pin_35 = average_float(Voltage_Bridge_ADC_Pin_35_Array, Number_Samples_Current);
 
-  Corrected_Voltage_ADC0 = (Voltage_Bridge_ADC0 * (97700 + 9960)) / 9960;
-  Corrected_Voltage_ADC1 = (Voltage_Bridge_ADC1 * (97700 + 9950)) / 9950;
+  Corrected_Voltage_ADC0 = (Voltage_Bridge_ADC0.average() * (97700 + 9960)) / 9960;
+  Corrected_Voltage_ADC1 = (Voltage_Bridge_ADC1.average() * (97700 + 9950)) / 9950;
 
-  Corrected_Voltage_ADC_Pin_34 = (Voltage_Bridge_ADC_Pin_34 * (97700 + 9960)) / 9960;
-  Corrected_Voltage_ADC_Pin_35 = (Voltage_Bridge_ADC_Pin_35 * (97700 + 9950)) / 9950;
+  Corrected_Voltage_ADC_Pin_34 = (Voltage_Bridge_ADC_Pin_34.average() * (97700 + 9960)) / 9960;
+  Corrected_Voltage_ADC_Pin_35 = (Voltage_Bridge_ADC_Pin_35.average() * (97700 + 9950)) / 9950;
 
   Current_ADS1115_Average = (Corrected_Voltage_ADC0 - Corrected_Voltage_ADC1) / 0.2;
   Current_ADC_ESP32_Average = (Corrected_Voltage_ADC_Pin_34 - Corrected_Voltage_ADC_Pin_35) / 0.2;
 
   // Voltage at the bridge
 
-  Serial.print(Voltage_Bridge_ADC0, 6);
+  Serial.print(Voltage_Bridge_ADC0.average(), 6);
   Serial.print(",");
-  Serial.print(Voltage_Bridge_ADC1, 6);
+  Serial.print(Voltage_Bridge_ADC1.average(), 6);
+  Serial.print(",");
+  Serial.print(Voltage_Bridge_ADC0.pop_stdev()*1000, 6);
   Serial.print(",");
 
-  Serial.print(Voltage_Bridge_ADC_Pin_34, 6);
+
+  Serial.print(Voltage_Bridge_ADC_Pin_34.average(), 6);
   Serial.print(",");
-  Serial.print(Voltage_Bridge_ADC_Pin_35, 6);
+  Serial.print(Voltage_Bridge_ADC_Pin_35.average(), 6);
+  Serial.print(",");
+  Serial.print(Voltage_Bridge_ADC_Pin_34.pop_stdev()*1000, 6);
   Serial.print(",");
 
   // Voltage corrected by approx factor 10
@@ -179,52 +184,55 @@ void loop(void)
   Serial.print(",");
   Serial.println(Current_ADC_ESP32_Average, 6);
 
+Voltage_Bridge_ADC_Pin_34.clear();
+Voltage_Bridge_ADC_Pin_35.clear();
+Voltage_Bridge_ADC0.clear();
+Voltage_Bridge_ADC1.clear();
 }
 
 
-#include "Statistic.h"
+// #include "Statistic.h"
 
-Statistic myStats;
+// Statistic myStats;
 
-uint32_t start;
-uint32_t stop;
+// uint32_t start;
+// uint32_t stop;
 
-void setup(void)
-{
-  Serial.begin(115200);
-  Serial.println(__FILE__);
-  Serial.print("Demo Statistics lib ");
-  Serial.println(STATISTIC_LIB_VERSION);
-  myStats.clear(); //explicitly start clean
-  start = millis();
-}
+// void setup(void)
+// {
+//   Serial.begin(115200);
+//   Serial.println(__FILE__);
+//   Serial.print("Demo Statistics lib ");
+//   Serial.println(STATISTIC_LIB_VERSION);
+//   myStats.clear(); //explicitly start clean
+//   start = millis();
+// }
 
-void loop(void)
-{
-  long rn = random(0, 9999);
-  myStats.add(rn / 100.0 + 1);
-  if (myStats.count() == 10000)
-  {
-    stop = millis();
-    Serial.print("        Count: ");
-    Serial.println(myStats.count());
-    Serial.print("          Min: ");
-    Serial.println(myStats.minimum(), 4);
-    Serial.print("          Max: ");
-    Serial.println(myStats.maximum(), 4);
-    Serial.print("      Average: ");
-    Serial.println(myStats.average(), 4);
-    Serial.print("     variance: ");
-    Serial.println(myStats.variance(), 4);
-    Serial.print("    pop stdev: ");
-    Serial.println(myStats.pop_stdev(), 4);
-    Serial.print(" unbias stdev: ");
-    Serial.println(myStats.unbiased_stdev(), 4);
-    Serial.print("     time(ms): ");
-    Serial.println(stop - start);
-    Serial.println("=====================================");
-    myStats.clear();
-    delay(1000);
-    start = millis();
-  }
-}
+// void loop(void)
+// {
+//   long rn = random(0, 9999);
+//   myStats.add(rn / 100.0 + 1);
+//   if (myStats.count() == 10000)
+//   {
+//     stop = millis();
+//     Serial.print("        Count: ");
+//     Serial.println(myStats.count());
+//     Serial.print("          Min: ");
+//     Serial.println(myStats.minimum(), 4);
+//     Serial.print("          Max: ");
+//     Serial.println(myStats.maximum(), 4);
+//     Serial.print("      Average: ");
+//     Serial.println(myStats.average(), 4);
+//     Serial.print("     variance: ");
+//     Serial.println(myStats.variance(), 4);
+//     Serial.print("    pop stdev: ");
+//     Serial.println(myStats.pop_stdev(), 4);
+//     Serial.print(" unbias stdev: ");
+//     Serial.println(myStats.unbiased_stdev(), 4);
+//     Serial.print("     time(ms): ");
+//     Serial.println(stop - start);
+//     Serial.println("=====================================");
+//     myStats.clear();
+//     delay(1000);
+//     start = millis();
+//   
