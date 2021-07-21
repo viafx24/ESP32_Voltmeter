@@ -114,7 +114,7 @@ void setup(void)
   }
   f.close();
 
-// clear content of "array like" Statistic object to be sure that they are empty at the beginning.
+  // clear content of "array like" Statistic object to be sure that they are empty at the beginning.
 
   ADC_Pin_33.clear();
   ADC_Pin_32.clear();
@@ -160,10 +160,10 @@ void loop(void)
     Voltage_Bridge_ADC_Pin_36.add(MyADS1115array[uint16_t(ADC_Pin_36.average())]);
   }
 
-  Voltage_Bridge_ADC0 = (ads1115.readADC_SingleEnded(0) * 6.144) / (2^15);
-  Voltage_Bridge_ADC1 = (ads1115.readADC_SingleEnded(1) * 6.144) / (2^15);
-  Voltage_Bridge_ADC2 = (ads1115.readADC_SingleEnded(2) * 6.144) / (2^15);
-  Voltage_Bridge_ADC3 = (ads1115.readADC_SingleEnded(3) * 6.144) / (2^15);
+  Voltage_Bridge_ADC0 = (ads1115.readADC_SingleEnded(0) * 6.144) / (2 ^ 15);
+  Voltage_Bridge_ADC1 = (ads1115.readADC_SingleEnded(1) * 6.144) / (2 ^ 15);
+  Voltage_Bridge_ADC2 = (ads1115.readADC_SingleEnded(2) * 6.144) / (2 ^ 15);
+  Voltage_Bridge_ADC3 = (ads1115.readADC_SingleEnded(3) * 6.144) / (2 ^ 15);
 
   Corrected_Voltage_ADC_Pin_33 = (Voltage_Bridge_ADC_Pin_33.average() * (R1 + R2)) / R2;
   Corrected_Voltage_ADC_Pin_32 = (Voltage_Bridge_ADC_Pin_32.average() * (R1 + R2)) / R2;
@@ -189,9 +189,8 @@ void loop(void)
   // Current_ADC_2_Low_Side = (Corrected_Voltage_ADC2) / R_Shunt_3
   // Current_ADC_3_Low_Side = (Corrected_Voltage_ADC3) / R_Shunt_4
 
-
   // Voltage at the bridge : 10 channels
-
+  Serial.println("Voltage at Bridge ");
   Serial.print(Voltage_Bridge_ADC0, 6);
   Serial.print(",");
   Serial.print(Voltage_Bridge_ADC1, 6);
@@ -210,12 +209,13 @@ void loop(void)
   Serial.print(",");
   Serial.print(Voltage_Bridge_ADC_Pin_39.average(), 6);
   Serial.print(",");
-  Serial.print(Voltage_Bridge_ADC_Pin_36.average(), 6);
-  Serial.print(",");
+  Serial.println(Voltage_Bridge_ADC_Pin_36.average(), 6);
+  //Serial.print(",");
 
   // Desired Voltage (corrected by approx factor 10 if R2=10*R1) allowing measurement
   // until approx 25V securely (security margin to 33V)
 
+  Serial.println("Search Voltage :");
   Serial.print(Corrected_Voltage_ADC0, 6);
   Serial.print(",");
   Serial.print(Corrected_Voltage_ADC1, 6);
@@ -234,14 +234,14 @@ void loop(void)
   Serial.print(",");
   Serial.print(Corrected_Voltage_ADC_Pin_39, 6);
   Serial.print(",");
-  Serial.print(Corrected_Voltage_ADC_Pin_36, 6);
-  Serial.print(",");
+  Serial.println(Corrected_Voltage_ADC_Pin_36, 6);
+  // Serial.print(",");
 
   // Current computed  function of high side or low side
   // keep in mind that current maybe measured also with GPIO of ADS1115 but less accurately
   // only on high side and with a strong sample number to get an average allowing good approximation.
 
-// commented but in case of want to use more channel with low side sensing.
+  // commented but in case of want to use more channel with low side sensing.
 
   // Serial.print(Current_ADC_0_Low_Side, 6);
   // Serial.print(",");
@@ -251,12 +251,12 @@ void loop(void)
   // Serial.print(",");
   // Serial.print(Current_ADC_3_Low_Side, 6);
 
+  Serial.println("Currents :");
   Serial.print(Current_ADC_0_1_High_Side, 6);
   Serial.print(",");
   Serial.println(Current_ADC_0_1_High_Side, 6);
 
-
-// clear content of "array" used by Statistics objects at each iteration
+  // clear content of "array" used by Statistics objects at each iteration
 
   Voltage_Bridge_ADC_Pin_33.clear();
   Voltage_Bridge_ADC_Pin_32.clear();
