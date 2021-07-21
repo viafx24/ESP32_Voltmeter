@@ -14,10 +14,17 @@
 // measure parameter
 Adafruit_ADS1115 ads1115;
 
-const int Pin_33 = 33;
-const int Pin_32 = 32;
-const int Pin_35 = 35;
-const int Pin_34 = 34;
+const int Pin_26 = 26;//adc2  not with wifi
+const int Pin_25 = 25;//adc2  not with wifi
+const int Pin_33 = 33;//adc1 
+const int Pin_32 = 32;//adc1
+const int Pin_35 = 35;//adc1
+const int Pin_34 = 34;//adc1
+const int Pin_39 = 39;//adc1 / SN
+const int Pin_36 = 36;//adc1 /SP 
+
+
+
 
 const uint16_t Number_Samples_ADC = 128;
 const uint16_t Number_Samples_Current = 150;
