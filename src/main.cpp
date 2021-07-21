@@ -19,8 +19,8 @@ const int Pin_32 = 32;
 const int Pin_35 = 35;
 const int Pin_34 = 34;
 
-const uint16_t Number_Samples_ADC = 64;
-const uint16_t Number_Samples_Current = 128;
+const uint16_t Number_Samples_ADC = 128;
+const uint16_t Number_Samples_Current = 150;
 
 // uint16_t ADC_Pin_33_Array[Number_Samples_ADC];
 // uint16_t ADC_Pin_32_Array[Number_Samples_ADC];
@@ -141,13 +141,13 @@ void loop(void)
   // Voltage_Bridge_ADC_Pin_35 = average_float(Voltage_Bridge_ADC_Pin_35_Array, Number_Samples_Current);
 
   Corrected_Voltage_ADC0 = (Voltage_Bridge_ADC0.average() * (97700 + 9960)) / 9960;
-  Corrected_Voltage_ADC1 = (Voltage_Bridge_ADC1.average() * (97700 + 9950)) / 9950;
+  Corrected_Voltage_ADC1 = (Voltage_Bridge_ADC1.average() * (97700 + 9960)) / 9960;
 
   Corrected_Voltage_ADC_Pin_34 = (Voltage_Bridge_ADC_Pin_34.average() * (97700 + 9960)) / 9960;
-  Corrected_Voltage_ADC_Pin_35 = (Voltage_Bridge_ADC_Pin_35.average() * (97700 + 9950)) / 9950;
+  Corrected_Voltage_ADC_Pin_35 = (Voltage_Bridge_ADC_Pin_35.average() * (97700 + 9960)) / 9960;
 
-  Current_ADS1115_Average = (Corrected_Voltage_ADC0 - Corrected_Voltage_ADC1) / 0.2;
-  Current_ADC_ESP32_Average = (Corrected_Voltage_ADC_Pin_34 - Corrected_Voltage_ADC_Pin_35) / 0.2;
+  Current_ADS1115_Average = (Corrected_Voltage_ADC0 - Corrected_Voltage_ADC1) / 0.38;
+  Current_ADC_ESP32_Average = (Corrected_Voltage_ADC_Pin_34 - Corrected_Voltage_ADC_Pin_35) / 0.38;
 
   // Voltage at the bridge
 
