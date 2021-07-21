@@ -24,15 +24,12 @@ const int Pin_36 = 36; //adc1 /SP
 const uint16_t Number_Samples_ADC = 128;
 const uint16_t Number_Samples_Current = 150;
 
-// uint16_t ADC_Pin_33_Array[Number_Samples_ADC];
-// uint16_t ADC_Pin_32_Array[Number_Samples_ADC];
-uint16_t ADC_Pin_35_Array[Number_Samples_ADC];
-uint16_t ADC_Pin_34_Array[Number_Samples_ADC];
-//float Diff_ADC_Pin_34_35[Number_Samples_ADC];
-
-uint16_t ADC_Pin_33_Average, ADC_Pin_32_Average, ADC_Pin_35_Average, ADC_Pin_34_Average;
-// uint16_t Diff_ADC_Pin_34_35_Average;
-// float Diff_ADC_Pin_34_35_Average;
+uint16_t ADC_Pin_33_Average;
+uint16_t ADC_Pin_32_Average;
+uint16_t ADC_Pin_35_Average;
+uint16_t ADC_Pin_34_Average;
+uint16_t ADC_Pin_39_Average;
+uint16_t ADC_Pin_36_Average;
 
 float adc0_Corrected, adc1_Corrected, adc2_Corrected, adc3_Corrected;
 float Corrected_Voltage_ADC0, Corrected_Voltage_ADC1;
@@ -53,30 +50,12 @@ float Current_ADC_ESP32_Samples[Number_Samples_Current];
 float Current_ADS1115_Average;
 float Current_ADC_ESP32_Average;
 
-// parameter for retrieving result from
+// parameter for retrieving result from SPIFF file
 
 String Line;
 uint16_t Count;
 const uint16_t Size_Array = 4096;
 float MyADS1115array[Size_Array];
-
-// the only function of the code
-
-float average_float(float *array, uint16_t len) // assuming array is int.
-{
-  float sum = 0; // sum will be larger than an item, long for safety.
-  for (int i = 0; i < len; i++)
-    sum += array[i];
-  return sum / len; // return an int not a float
-}
-
-uint16_t average_uint16(uint16_t *array, uint16_t len) // assuming array is int.
-{
-  long sum = 0L; // sum will be larger than an item, long for safety.
-  for (int i = 0; i < len; i++)
-    sum += array[i];
-  return sum / len; // return an int not a float
-}
 
 void setup(void)
 {
@@ -141,7 +120,6 @@ void loop(void)
 
     Voltage_Bridge_ADC0.add(adc0_Corrected * 3.3 / 4096);
     Voltage_Bridge_ADC1.add(adc1_Corrected * 3.3 / 4096);
-
   }
 
   // Voltage_Bridge_ADC0 = average_float(Voltage_Bridge_ADC0_Array, Number_Samples_Current);
