@@ -28,7 +28,7 @@ uint32_t R1 = 97700;
 uint16_t R2 = 9960;
 
 float R_Shunt_1 = 0.38;
-float R_Shunt_2 = 0.1;
+float R_Shunt_2 = 0.38;
 float R_Shunt_3 = 0.1;
 float R_Shunt_4 = 0.1;
 
@@ -160,10 +160,10 @@ void loop(void)
     Voltage_Bridge_ADC_Pin_36.add(MyADS1115array[uint16_t(ADC_Pin_36.average())]);
   }
 
-  Voltage_Bridge_ADC0 = (ads1115.readADC_SingleEnded(0) * 6.144) / (2 ^ 15);
-  Voltage_Bridge_ADC1 = (ads1115.readADC_SingleEnded(1) * 6.144) / (2 ^ 15);
-  Voltage_Bridge_ADC2 = (ads1115.readADC_SingleEnded(2) * 6.144) / (2 ^ 15);
-  Voltage_Bridge_ADC3 = (ads1115.readADC_SingleEnded(3) * 6.144) / (2 ^ 15);
+  Voltage_Bridge_ADC0 = ads1115.computeVolts(ads1115.readADC_SingleEnded(0));
+  Voltage_Bridge_ADC1 = ads1115.computeVolts(ads1115.readADC_SingleEnded(1));
+  Voltage_Bridge_ADC2 = ads1115.computeVolts(ads1115.readADC_SingleEnded(2));
+  Voltage_Bridge_ADC3 = ads1115.computeVolts(ads1115.readADC_SingleEnded(3));
 
   Corrected_Voltage_ADC_Pin_33 = (Voltage_Bridge_ADC_Pin_33.average() * (R1 + R2)) / R2;
   Corrected_Voltage_ADC_Pin_32 = (Voltage_Bridge_ADC_Pin_32.average() * (R1 + R2)) / R2;
@@ -254,7 +254,7 @@ void loop(void)
   Serial.println("Currents :");
   Serial.print(Current_ADC_0_1_High_Side, 6);
   Serial.print(",");
-  Serial.println(Current_ADC_0_1_High_Side, 6);
+  Serial.println(Current_ADC_2_3_High_Side, 6);
 
   // clear content of "array" used by Statistics objects at each iteration
 
