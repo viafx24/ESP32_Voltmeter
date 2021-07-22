@@ -21,8 +21,8 @@ const int Pin_34 = 34; //adc1
 const int Pin_39 = 39; //adc1 /SN
 const int Pin_36 = 36; //adc1 /SP
 
-const uint16_t Number_Samples_ADC = 128;
-const uint16_t Number_Samples_Current = 150;
+const uint16_t Number_Samples_ADC = 64;
+const uint16_t Number_Samples_Current = 32;
 
 uint32_t R1 = 97700;
 uint16_t R2 = 9960;
@@ -68,6 +68,8 @@ float Current_ADC_ESP32_Average;
 
 float Current_ADC_0_1_High_Side;
 float Current_ADC_2_3_High_Side;
+
+float Current_ADC_GPIO34_GPIO35_High_Side;
 
 //float Current_ADC_0_Low_Side  ;
 //float Current_ADC_1_Low_Side  ;
@@ -182,6 +184,8 @@ void loop(void)
   Current_ADC_0_1_High_Side = (Corrected_Voltage_ADC0 - Corrected_Voltage_ADC1) / R_Shunt_1;
   Current_ADC_2_3_High_Side = (Corrected_Voltage_ADC2 - Corrected_Voltage_ADC3) / R_Shunt_2;
 
+  Current_ADC_GPIO34_GPIO35_High_Side = (Corrected_Voltage_ADC_Pin_34 - Corrected_Voltage_ADC_Pin_35) / R_Shunt_2;
+
   // Keeping the other possibility to work with 4 current sensing channels on low-side
 
   // Current_ADC_0_Low_Side = (Corrected_Voltage_ADC0) / R_Shunt_1
@@ -254,7 +258,11 @@ void loop(void)
   Serial.println("Currents :");
   Serial.print(Current_ADC_0_1_High_Side, 6);
   Serial.print(",");
-  Serial.println(Current_ADC_2_3_High_Side, 6);
+  Serial.print(Current_ADC_2_3_High_Side, 6);
+  Serial.print(",");
+  Serial.println( Current_ADC_GPIO34_GPIO35_High_Side, 6);
+
+ 
 
   // clear content of "array" used by Statistics objects at each iteration
 
