@@ -16,11 +16,13 @@ Adafruit_ADS1115 ads1115;
 //  parameters that should be easily modify
 
 const uint16_t Number_Samples_ADC_ESP32 = 48;
-const uint16_t Number_Samples_ADC_ESP32_Second_Loop = 10;
-const uint16_t Number_Samples_ADS1115 = 10;
+const uint16_t Number_Samples_ADC_ESP32_Second_Loop = 1;
+const uint16_t Number_Samples_ADS1115 = 1;
 
+//uint32_t R0 = 97700;
 uint32_t R1 = 97700;
-uint16_t R2 = 9960;
+uint32_t R2 = 99000;//19980 ;// 9960;
+uint32_t R3 = 98200;// 9960;
 
 float R_Shunt_1 = 0.1;
 float R_Shunt_2 = 0.1;
@@ -200,17 +202,17 @@ for (uint16_t i = 0; i < Number_Samples_ADS1115; i++)
 
 Time_3 = millis();
 
-Corrected_Voltage_ADC_Pin_33 = (Voltage_Bridge_ADC_Pin_33.average() * (R1 + R2)) / R2;
+Corrected_Voltage_ADC_Pin_33 = (Voltage_Bridge_ADC_Pin_33.average() * (R1 + R3)) / R3;
 Corrected_Voltage_ADC_Pin_32 = (Voltage_Bridge_ADC_Pin_32.average() * (R1 + R2)) / R2;
-Corrected_Voltage_ADC_Pin_35 = (Voltage_Bridge_ADC_Pin_35.average() * (R1 + R2)) / R2;
+Corrected_Voltage_ADC_Pin_35 = (Voltage_Bridge_ADC_Pin_35.average() * (R1 + R3)) / R3;
 Corrected_Voltage_ADC_Pin_34 = (Voltage_Bridge_ADC_Pin_34.average() * (R1 + R2)) / R2;
-Corrected_Voltage_ADC_Pin_39 = (Voltage_Bridge_ADC_Pin_39.average() * (R1 + R2)) / R2;
+Corrected_Voltage_ADC_Pin_39 = (Voltage_Bridge_ADC_Pin_39.average() * (R1 + R3)) / R3;
 Corrected_Voltage_ADC_Pin_36 = (Voltage_Bridge_ADC_Pin_36.average() * (R1 + R2)) / R2;
 
 Corrected_Voltage_ADC0 = (Voltage_Bridge_ADC0.average() * (R1 + R2)) / R2;
-Corrected_Voltage_ADC1 = (Voltage_Bridge_ADC1.average() * (R1 + R2)) / R2;
+Corrected_Voltage_ADC1 = (Voltage_Bridge_ADC1.average() * (R1 + R3)) / R3;
 Corrected_Voltage_ADC2 = (Voltage_Bridge_ADC2.average() * (R1 + R2)) / R2;
-Corrected_Voltage_ADC3 = (Voltage_Bridge_ADC3.average() * (R1 + R2)) / R2;
+Corrected_Voltage_ADC3 = (Voltage_Bridge_ADC3.average() * (R1 + R3)) / R3;
 
 // differential High side measure of current
 
