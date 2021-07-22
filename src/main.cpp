@@ -22,7 +22,7 @@ const int Pin_39 = 39; //adc1 /SN
 const int Pin_36 = 36; //adc1 /SP
 
 const uint16_t Number_Samples_ADC = 64;
-const uint16_t Number_Samples_Current = 1;
+const uint16_t Number_Samples_Current = 12;
 
 uint32_t R1 = 97700;
 uint16_t R2 = 9960;
@@ -70,6 +70,9 @@ float Current_ADC_0_1_High_Side;
 float Current_ADC_2_3_High_Side;
 
 float Current_ADC_GPIO34_GPIO35_High_Side;
+
+unsigned long Time_from_Begin;
+unsigned long Time_For_Sample_Rate;
 
 //float Current_ADC_0_Low_Side  ;
 //float Current_ADC_1_Low_Side  ;
@@ -131,10 +134,24 @@ void setup(void)
   Voltage_Bridge_ADC_Pin_34.clear();
   Voltage_Bridge_ADC_Pin_39.clear();
   Voltage_Bridge_ADC_Pin_36.clear();
+
+
+  Time_from_Begin=millis();
 }
 
 void loop(void)
 {
+  // clear content of "array" used by Statistics objects at each iteration
+
+  Voltage_Bridge_ADC_Pin_33.clear();
+  Voltage_Bridge_ADC_Pin_32.clear();
+  Voltage_Bridge_ADC_Pin_35.clear();
+  Voltage_Bridge_ADC_Pin_34.clear();
+  Voltage_Bridge_ADC_Pin_39.clear();
+  Voltage_Bridge_ADC_Pin_36.clear();
+
+  Time_For_Sample_Rate = millis();
+
   for (uint16_t k = 0; k < Number_Samples_Current; k++) // 32 à la base semblait suffisant.
   {
     ADC_Pin_33.clear();
@@ -192,8 +209,9 @@ void loop(void)
   // Current_ADC_1_Low_Side = (Corrected_Voltage_ADC1) / R_Shunt_2
   // Current_ADC_2_Low_Side = (Corrected_Voltage_ADC2) / R_Shunt_3
   // Current_ADC_3_Low_Side = (Corrected_Voltage_ADC3) / R_Shunt_4
-
+  
   // Voltage at the bridge : 10 channels
+
   Serial.println("Voltage at Bridge ");
   Serial.print(Voltage_Bridge_ADC0, 6);
   Serial.print(",");
@@ -217,7 +235,22 @@ void loop(void)
   Serial.println(Voltage_Bridge_ADC_Pin_39.average(), 6);
   //Serial.print(",");
 
-  // Desired Voltage (corrected by approx factor 10 if R2=10*R1) allowing measurement
+// std of voltage bridge
+  Serial.println("Standard deviation of Voltage at Bridge: "); 
+  Serial.print(Voltage_Bridge_ADC_Pin_32.pop_stdev(), 6);
+  Serial.print(",");
+  Serial.print(Voltage_Bridge_ADC_Pin_33.pop_stdev(), 6);
+  Serial.print(",");
+  Serial.print(Voltage_Bridge_ADC_Pin_34.pop_stdev(), 6);
+  Serial.print(",");
+  Serial.print(Voltage_Bridge_ADC_Pin_35.pop_stdev(), 6);
+  Serial.print(",");
+  Serial.print(Voltage_Bridge_ADC_Pin_36.pop_stdev(), 6);
+  Serial.print(",");
+  Serial.println(Voltage_Bridge_ADC_Pin_39.pop_stdev(), 6);
+
+
+  // Search Voltage (corrected by approx factor 10 if R2=10*R1) allowing measurement
   // until approx 25V securely (security margin to 33V)
 
   Serial.println("Search Voltage :");
@@ -263,14 +296,9 @@ void loop(void)
   Serial.print(",");
   Serial.println( Current_ADC_GPIO34_GPIO35_High_Side, 6);
 
- 
+  Serial.println ("Time : ");
+  Serial.print(millis() - Time_from_Begin);
+  Serial.print(",");
+  Serial.println(millis() - Time_For_Sample_Rate);
 
-  // clear content of "array" used by Statistics objects at each iteration
-
-  Voltage_Bridge_ADC_Pin_33.clear();
-  Voltage_Bridge_ADC_Pin_32.clear();
-  Voltage_Bridge_ADC_Pin_35.clear();
-  Voltage_Bridge_ADC_Pin_34.clear();
-  Voltage_Bridge_ADC_Pin_39.clear();
-  Voltage_Bridge_ADC_Pin_36.clear();
 }
