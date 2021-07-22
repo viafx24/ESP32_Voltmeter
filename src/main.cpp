@@ -22,7 +22,7 @@ const int Pin_39 = 39; //adc1 /SN
 const int Pin_36 = 36; //adc1 /SP
 
 const uint16_t Number_Samples_ADC = 64;
-const uint16_t Number_Samples_Current = 32;
+const uint16_t Number_Samples_Current = 1;
 
 uint32_t R1 = 97700;
 uint16_t R2 = 9960;
@@ -203,17 +203,18 @@ void loop(void)
   Serial.print(",");
   Serial.print(Voltage_Bridge_ADC3, 6);
   Serial.print(",");
-  Serial.print(Voltage_Bridge_ADC_Pin_33.average(), 6);
-  Serial.print(",");
+  // I decide to change the order here, to see all the high side first, and then behind resistor.
   Serial.print(Voltage_Bridge_ADC_Pin_32.average(), 6);
   Serial.print(",");
-  Serial.print(Voltage_Bridge_ADC_Pin_35.average(), 6);
+  Serial.print(Voltage_Bridge_ADC_Pin_33.average(), 6);
   Serial.print(",");
   Serial.print(Voltage_Bridge_ADC_Pin_34.average(), 6);
   Serial.print(",");
-  Serial.print(Voltage_Bridge_ADC_Pin_39.average(), 6);
+  Serial.print(Voltage_Bridge_ADC_Pin_35.average(), 6);
   Serial.print(",");
-  Serial.println(Voltage_Bridge_ADC_Pin_36.average(), 6);
+  Serial.print(Voltage_Bridge_ADC_Pin_36.average(), 6);
+  Serial.print(",");
+  Serial.println(Voltage_Bridge_ADC_Pin_39.average(), 6);
   //Serial.print(",");
 
   // Desired Voltage (corrected by approx factor 10 if R2=10*R1) allowing measurement
@@ -228,17 +229,17 @@ void loop(void)
   Serial.print(",");
   Serial.print(Corrected_Voltage_ADC3, 6);
   Serial.print(",");
-  Serial.print(Corrected_Voltage_ADC_Pin_33, 6);
-  Serial.print(",");
   Serial.print(Corrected_Voltage_ADC_Pin_32, 6);
   Serial.print(",");
-  Serial.print(Corrected_Voltage_ADC_Pin_35, 6);
+  Serial.print(Corrected_Voltage_ADC_Pin_33, 6);
   Serial.print(",");
   Serial.print(Corrected_Voltage_ADC_Pin_34, 6);
   Serial.print(",");
-  Serial.print(Corrected_Voltage_ADC_Pin_39, 6);
+  Serial.print(Corrected_Voltage_ADC_Pin_35, 6);
   Serial.print(",");
-  Serial.println(Corrected_Voltage_ADC_Pin_36, 6);
+  Serial.print(Corrected_Voltage_ADC_Pin_36, 6);
+  Serial.print(",");
+  Serial.println(Corrected_Voltage_ADC_Pin_39, 6);
   // Serial.print(",");
 
   // Current computed  function of high side or low side
