@@ -21,7 +21,7 @@ const int Pin_34 = 34; //adc1
 const int Pin_39 = 39; //adc1 /SN
 const int Pin_36 = 36; //adc1 /SP
 
-const uint16_t Number_Samples_ADC = 64;
+const uint16_t Number_Samples_ADC = 128;
 const uint16_t Number_Samples_Current = 12;
 
 uint32_t R1 = 97700;
@@ -119,30 +119,15 @@ void setup(void)
   }
   f.close();
 
-  // clear content of "array like" Statistic object to be sure that they are empty at the beginning.
-
-  ADC_Pin_33.clear();
-  ADC_Pin_32.clear();
-  ADC_Pin_35.clear();
-  ADC_Pin_34.clear();
-  ADC_Pin_39.clear();
-  ADC_Pin_36.clear();
-
-  Voltage_Bridge_ADC_Pin_33.clear();
-  Voltage_Bridge_ADC_Pin_32.clear();
-  Voltage_Bridge_ADC_Pin_35.clear();
-  Voltage_Bridge_ADC_Pin_34.clear();
-  Voltage_Bridge_ADC_Pin_39.clear();
-  Voltage_Bridge_ADC_Pin_36.clear();
-
-
   Time_from_Begin=millis();
 }
 
 void loop(void)
 {
-  // clear content of "array" used by Statistics objects at each iteration
 
+    Time_For_Sample_Rate = millis();
+
+  // clear content of "array" used by Statistics objects at each iteration
   Voltage_Bridge_ADC_Pin_33.clear();
   Voltage_Bridge_ADC_Pin_32.clear();
   Voltage_Bridge_ADC_Pin_35.clear();
@@ -150,7 +135,7 @@ void loop(void)
   Voltage_Bridge_ADC_Pin_39.clear();
   Voltage_Bridge_ADC_Pin_36.clear();
 
-  Time_For_Sample_Rate = millis();
+
 
   for (uint16_t k = 0; k < Number_Samples_Current; k++) // 32 à la base semblait suffisant.
   {
@@ -237,17 +222,17 @@ void loop(void)
 
 // std of voltage bridge
   Serial.println("Standard deviation of Voltage at Bridge: "); 
-  Serial.print(Voltage_Bridge_ADC_Pin_32.pop_stdev(), 6);
+  Serial.print(Voltage_Bridge_ADC_Pin_32.pop_stdev() * 1000, 6);
   Serial.print(",");
-  Serial.print(Voltage_Bridge_ADC_Pin_33.pop_stdev(), 6);
+  Serial.print(Voltage_Bridge_ADC_Pin_33.pop_stdev() * 1000, 6);
   Serial.print(",");
-  Serial.print(Voltage_Bridge_ADC_Pin_34.pop_stdev(), 6);
+  Serial.print(Voltage_Bridge_ADC_Pin_34.pop_stdev() * 1000, 6);
   Serial.print(",");
-  Serial.print(Voltage_Bridge_ADC_Pin_35.pop_stdev(), 6);
+  Serial.print(Voltage_Bridge_ADC_Pin_35.pop_stdev() * 1000, 6);
   Serial.print(",");
-  Serial.print(Voltage_Bridge_ADC_Pin_36.pop_stdev(), 6);
+  Serial.print(Voltage_Bridge_ADC_Pin_36.pop_stdev() * 1000, 6);
   Serial.print(",");
-  Serial.println(Voltage_Bridge_ADC_Pin_39.pop_stdev(), 6);
+  Serial.println(Voltage_Bridge_ADC_Pin_39.pop_stdev() * 1000, 6);
 
 
   // Search Voltage (corrected by approx factor 10 if R2=10*R1) allowing measurement
