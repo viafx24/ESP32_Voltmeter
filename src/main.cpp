@@ -15,8 +15,8 @@ Adafruit_ADS1115 ads1115;
 
 //  parameters that should be easily modify
 
-const uint16_t Number_Samples_ADC_ESP32 = 128;
-const uint16_t Number_Samples_ADC_ESP32_Second_Loop = 4;
+const uint16_t Number_Samples_ADC_ESP32 = 1;
+const uint16_t Number_Samples_ADC_ESP32_Second_Loop = 255;
 const uint16_t Number_Samples_ADS1115 = 4;
 
 uint32_t R1 = 97700;
@@ -169,15 +169,17 @@ void loop(void)
     Voltage_Bridge_ADC_Pin_34.add(MyADS1115array[uint16_t(ADC_Pin_34.average())]);
     Voltage_Bridge_ADC_Pin_39.add(MyADS1115array[uint16_t(ADC_Pin_39.average())]);
     Voltage_Bridge_ADC_Pin_36.add(MyADS1115array[uint16_t(ADC_Pin_36.average())]);
-  }
 
-  for (uint16_t i = 0; i < Number_Samples_ADS1115; i++)
-  {
     Voltage_Bridge_ADC0.add(ads1115.computeVolts(ads1115.readADC_SingleEnded(0)));
     Voltage_Bridge_ADC1.add(ads1115.computeVolts(ads1115.readADC_SingleEnded(1)));
     Voltage_Bridge_ADC2.add(ads1115.computeVolts(ads1115.readADC_SingleEnded(2)));
     Voltage_Bridge_ADC3.add(ads1115.computeVolts(ads1115.readADC_SingleEnded(3)));
   }
+
+  // for (uint16_t i = 0; i < Number_Samples_ADS1115; i++)
+  // {
+
+  // }
 
   Corrected_Voltage_ADC_Pin_33 = (Voltage_Bridge_ADC_Pin_33.average() * (R1 + R2)) / R2;
   Corrected_Voltage_ADC_Pin_32 = (Voltage_Bridge_ADC_Pin_32.average() * (R1 + R2)) / R2;
