@@ -16,13 +16,14 @@ Adafruit_ADS1115 ads1115;
 //  parameters that should be easily modify
 
 const uint16_t Number_Samples_ADC_ESP32 = 48;
-const uint16_t Number_Samples_ADC_ESP32_Second_Loop = 1;
-const uint16_t Number_Samples_ADS1115 = 1;
+const uint16_t Number_Samples_ADC_ESP32_Second_Loop = 20;
+const uint16_t Number_Samples_ADS1115 = 20;
 
 //uint32_t R0 = 97700;
 uint32_t R1 = 97700;
-uint32_t R2 = 99000;//19980 ;// 9960;
-uint32_t R3 = 98200;// 9960;
+uint32_t R2 = 9960;//19980 ;// 9960;
+uint32_t R3 = 9960;//19980 ;// 9960;
+//uint32_t R3 = 98200;// 9960;
 
 float R_Shunt_1 = 0.1;
 float R_Shunt_2 = 0.1;
@@ -231,50 +232,50 @@ Time_Compute = millis();
 
 // Voltage at the bridge : 10 channels
 
-Serial.println("Voltage at Bridge ");
-Serial.print(Voltage_Bridge_ADC0.average(), 6);
-Serial.print(",");
-Serial.print(Voltage_Bridge_ADC1.average(), 6);
-Serial.print(",");
-Serial.print(Voltage_Bridge_ADC2.average(), 6);
-Serial.print(",");
-Serial.print(Voltage_Bridge_ADC3.average(), 6);
-Serial.print(",");
+// Serial.println("Voltage at Bridge ");
+// Serial.print(Voltage_Bridge_ADC0.average(), 6);
+// Serial.print(",");
+// Serial.print(Voltage_Bridge_ADC1.average(), 6);
+// Serial.print(",");
+// Serial.print(Voltage_Bridge_ADC2.average(), 6);
+// Serial.print(",");
+// Serial.print(Voltage_Bridge_ADC3.average(), 6);
+// Serial.print(",");
 // I decide to change the order here, to see all the high side first, and then behind resistor.
-Serial.print(Voltage_Bridge_ADC_Pin_32.average(), 6);
-Serial.print(",");
-Serial.print(Voltage_Bridge_ADC_Pin_33.average(), 6);
-Serial.print(",");
-Serial.print(Voltage_Bridge_ADC_Pin_34.average(), 6);
-Serial.print(",");
-Serial.print(Voltage_Bridge_ADC_Pin_35.average(), 6);
-Serial.print(",");
-Serial.print(Voltage_Bridge_ADC_Pin_36.average(), 6);
-Serial.print(",");
-Serial.println(Voltage_Bridge_ADC_Pin_39.average(), 6);
+// Serial.print(Voltage_Bridge_ADC_Pin_32.average(), 6);
+// Serial.print(",");
+// Serial.print(Voltage_Bridge_ADC_Pin_33.average(), 6);
+// Serial.print(",");
+// Serial.print(Voltage_Bridge_ADC_Pin_34.average(), 6);
+// Serial.print(",");
+// Serial.print(Voltage_Bridge_ADC_Pin_35.average(), 6);
+// Serial.print(",");
+// Serial.print(Voltage_Bridge_ADC_Pin_36.average(), 6);
+// Serial.print(",");
+// Serial.println(Voltage_Bridge_ADC_Pin_39.average(), 6);
 //Serial.print(",");
 
 // std of voltage bridge
-Serial.println("Standard deviation of Voltage at Bridge: ");
-Serial.print(Voltage_Bridge_ADC0.pop_stdev() * 1000, 6);
-Serial.print(",");
-Serial.print(Voltage_Bridge_ADC1.pop_stdev() * 1000, 6);
-Serial.print(",");
-Serial.print(Voltage_Bridge_ADC2.pop_stdev() * 1000, 6);
-Serial.print(",");
-Serial.print(Voltage_Bridge_ADC3.pop_stdev() * 1000, 6);
-Serial.print(",");
-Serial.print(Voltage_Bridge_ADC_Pin_32.pop_stdev() * 1000, 6);
-Serial.print(",");
-Serial.print(Voltage_Bridge_ADC_Pin_33.pop_stdev() * 1000, 6);
-Serial.print(",");
-Serial.print(Voltage_Bridge_ADC_Pin_34.pop_stdev() * 1000, 6);
-Serial.print(",");
-Serial.print(Voltage_Bridge_ADC_Pin_35.pop_stdev() * 1000, 6);
-Serial.print(",");
-Serial.print(Voltage_Bridge_ADC_Pin_36.pop_stdev() * 1000, 6);
-Serial.print(",");
-Serial.println(Voltage_Bridge_ADC_Pin_39.pop_stdev() * 1000, 6);
+// Serial.println("Standard deviation of Voltage at Bridge: ");
+// Serial.print(Voltage_Bridge_ADC0.pop_stdev() * 1000, 6);
+// Serial.print(",");
+// Serial.print(Voltage_Bridge_ADC1.pop_stdev() * 1000, 6);
+// Serial.print(",");
+// Serial.print(Voltage_Bridge_ADC2.pop_stdev() * 1000, 6);
+// Serial.print(",");
+// Serial.print(Voltage_Bridge_ADC3.pop_stdev() * 1000, 6);
+// Serial.print(",");
+// Serial.print(Voltage_Bridge_ADC_Pin_32.pop_stdev() * 1000, 6);
+// Serial.print(",");
+// Serial.print(Voltage_Bridge_ADC_Pin_33.pop_stdev() * 1000, 6);
+// Serial.print(",");
+// Serial.print(Voltage_Bridge_ADC_Pin_34.pop_stdev() * 1000, 6);
+// Serial.print(",");
+// Serial.print(Voltage_Bridge_ADC_Pin_35.pop_stdev() * 1000, 6);
+// Serial.print(",");
+// Serial.print(Voltage_Bridge_ADC_Pin_36.pop_stdev() * 1000, 6);
+// Serial.print(",");
+// Serial.println(Voltage_Bridge_ADC_Pin_39.pop_stdev() * 1000, 6);
 
 // Search Voltage (corrected by approx factor 10 if R2=10*R1) allowing measurement
 // until approx 25V securely (security margin to 33V)
@@ -283,22 +284,22 @@ Serial.println("Search Voltage :");
 Serial.print(Corrected_Voltage_ADC0, 6);
 Serial.print(",");
 Serial.print(Corrected_Voltage_ADC1, 6);
-Serial.print(",");
-Serial.print(Corrected_Voltage_ADC2, 6);
-Serial.print(",");
-Serial.print(Corrected_Voltage_ADC3, 6);
+// Serial.print(",");
+// Serial.print(Corrected_Voltage_ADC2, 6);
+// Serial.print(",");
+// Serial.print(Corrected_Voltage_ADC3, 6);
 Serial.print(",");
 Serial.print(Corrected_Voltage_ADC_Pin_32, 6);
 Serial.print(",");
-Serial.print(Corrected_Voltage_ADC_Pin_33, 6);
-Serial.print(",");
-Serial.print(Corrected_Voltage_ADC_Pin_34, 6);
-Serial.print(",");
-Serial.print(Corrected_Voltage_ADC_Pin_35, 6);
-Serial.print(",");
-Serial.print(Corrected_Voltage_ADC_Pin_36, 6);
-Serial.print(",");
-Serial.println(Corrected_Voltage_ADC_Pin_39, 6);
+Serial.println(Corrected_Voltage_ADC_Pin_33, 6);
+// Serial.print(",");
+// Serial.print(Corrected_Voltage_ADC_Pin_34, 6);
+// Serial.print(",");
+// Serial.print(Corrected_Voltage_ADC_Pin_35, 6);
+// Serial.print(",");
+// Serial.print(Corrected_Voltage_ADC_Pin_36, 6);
+// Serial.print(",");
+// Serial.println(Corrected_Voltage_ADC_Pin_39, 6);
 // Serial.print(",");
 
 // Current computed  function of high side or low side
@@ -315,22 +316,22 @@ Serial.println(Corrected_Voltage_ADC_Pin_39, 6);
 // Serial.print(",");
 // Serial.print(Current_ADC_3_Low_Side, 6);
 
-Serial.println("Currents :");
-Serial.print(Current_ADC_0_1_High_Side, 6);
-Serial.print(",");
-Serial.print(Current_ADC_2_3_High_Side, 6);
-Serial.print(",");
-Serial.println(Current_ADC_GPIO34_GPIO35_High_Side, 6);
+// Serial.println("Currents :");
+// Serial.print(Current_ADC_0_1_High_Side, 6);
+// Serial.print(",");
+// Serial.print(Current_ADC_2_3_High_Side, 6);
+// Serial.print(",");
+// Serial.println(Current_ADC_GPIO34_GPIO35_High_Side, 6);
 
-Serial.println("Time : ");
-Serial.print(millis() - Time_from_Begin);
-Serial.print(",");
-Serial.print(millis() - Time_For_Sample_Rate);
-Serial.print(",");
-Serial.print((Time_2 - Time_1) );
-Serial.print(",");
-Serial.print((Time_3 - Time_2));
-Serial.print(",");
-Serial.println((millis() - Time_3) );
+// Serial.println("Time : ");
+// Serial.print(millis() - Time_from_Begin);
+// Serial.print(",");
+// Serial.print(millis() - Time_For_Sample_Rate);
+// Serial.print(",");
+// Serial.print((Time_2 - Time_1) );
+// Serial.print(",");
+// Serial.print((Time_3 - Time_2));
+// Serial.print(",");
+// Serial.println((millis() - Time_3) );
 
 }
