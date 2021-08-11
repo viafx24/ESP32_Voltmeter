@@ -110,12 +110,25 @@ unsigned long Time_6;
 //float Current_ADC_2_Low_Side  ;
 //float Current_ADC_3_Low_Side  ;
 
+//parameter for capacititve touch
+uint8_t threshold=40;
+uint8_t Number_Touching=0;
+
 // parameter for retrieving result from SPIFF file
 
 String Line;
 uint16_t Count;
 const uint16_t Size_Array = 4096;
 float MyADS1115array[Size_Array];
+
+
+
+void gotTouch(){
+  Serial.println("\n");
+  Serial.println(Number_Touching);
+  Serial.println("\n");
+}
+
 
 void setup(void)
 {
@@ -156,6 +169,9 @@ void setup(void)
     for (;;)
       ; // Don't proceed, loop forever
   }
+
+
+  touchAttachInterrupt(T0, gotTouch, threshold);
 
   display.clearDisplay();
 
@@ -415,3 +431,4 @@ Serial.println(Corrected_Voltage_ADC_Pin_33, 6);
 
 
 }
+
