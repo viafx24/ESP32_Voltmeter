@@ -1,15 +1,21 @@
 
 #include <Arduino.h>
 #include <Adafruit_ADS1X15.h>
-// #include <WiFi.h>
-// #include <AsyncTCP.h>
-// #include <ESPAsyncWebServer.h>
-// #include <AsyncElegantOTA.h>
+#include <WiFi.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <Adafruit_I2CDevice.h> // Guillaume add
 #include "SPIFFS.h"
 #include "Statistic.h"
+
+// wifi
+
+const char *ssid = "freebox_OOKMJG";
+const char *password = "38100Alexandre!";
+
+String Data;
+
+WiFiServer server(80);
 
 // OLED parameter and objects
 
@@ -120,6 +126,27 @@ uint16_t Count;
 const uint16_t Size_Array = 4096;
 float MyADS1115array[Size_Array];
 
+
+void Send_Data_By_Wifi(String Data)
+{
+
+  if (client)
+  {            
+    if (client.connected())
+    {
+      client.println(Data);
+    } 
+  }
+}
+
+
+
+void Compute_Voltage_from_ESP32()
+{
+
+  
+}
+
 void gotTouch()
 {
   if (millis() - sinceLastTouch < 500)
@@ -138,6 +165,17 @@ void setup(void)
 
   Serial.begin(115200);
   ads1115.begin();
+
+  // wifi stuff
+  WiFi.begin(ssid, password);
+
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    delay(500);
+    // Serial.print(".");
+  }
+
+  server.begin();
 
   // reading in data file (SPIFFS) to get all the true value of voltage for ADC integer
   // between 0 and 4095. only work for adc1; adc2 should require different Lookup table.
@@ -194,6 +232,8 @@ void setup(void)
 
 void loop(void)
 {
+
+  WiFiClient client = server.available(); // listen for incoming clients
 
   Time_For_Sample_Rate = millis();
 
@@ -345,6 +385,11 @@ void loop(void)
     display.setTextSize(4);
     display.print(Corrected_Voltage_ADC0);
     display.display();
+
+    Data=String(Corrected_Voltage_ADC0);
+    Send_Data_By_Wifi(Data);
+
+
     break;
 
   case 1:
