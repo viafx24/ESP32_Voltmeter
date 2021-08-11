@@ -1,10 +1,10 @@
 
 #include <Arduino.h>
 #include <Adafruit_ADS1X15.h>
-#include <WiFi.h>
-#include <AsyncTCP.h>
-#include <ESPAsyncWebServer.h>
-#include <AsyncElegantOTA.h>
+// #include <WiFi.h>
+// #include <AsyncTCP.h>
+// #include <ESPAsyncWebServer.h>
+// #include <AsyncElegantOTA.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <Adafruit_I2CDevice.h> // Guillaume add
@@ -85,6 +85,9 @@ float Current_ADC_ESP32_Average;
 float Current_ADC_0_1_High_Side;
 float Current_ADC_2_3_High_Side;
 
+float Voltage_Diff_ADC_0_1;
+float Voltage_Diff_ADC_2_3;
+
 float Current_ADC_GPIO34_GPIO35_High_Side;
 
 unsigned long Time_from_Begin;
@@ -124,11 +127,10 @@ void gotTouch()
   sinceLastTouch = millis();
   Number_Touching++;
   Serial.println(Number_Touching);
-  if (Number_Touching >= 4)
+  if (Number_Touching >= 12)
   {
     Number_Touching = 0;
   }
-
 }
 
 void setup(void)
@@ -185,7 +187,7 @@ void setup(void)
 
   display.display();
 
-  delay(4000);
+  delay(1000);
 
   Time_from_Begin = millis();
 }
@@ -267,65 +269,12 @@ void loop(void)
   Current_ADC_0_1_High_Side = (Corrected_Voltage_ADC0 - Corrected_Voltage_ADC1) / R_Shunt_1;
   Current_ADC_2_3_High_Side = (Corrected_Voltage_ADC2 - Corrected_Voltage_ADC3) / R_Shunt_2;
 
+  Voltage_Diff_ADC_0_1 = Corrected_Voltage_ADC0 - Corrected_Voltage_ADC1;
+  Voltage_Diff_ADC_2_3 = Corrected_Voltage_ADC2 - Corrected_Voltage_ADC3;
+
   Current_ADC_GPIO34_GPIO35_High_Side = (Corrected_Voltage_ADC_Pin_34 - Corrected_Voltage_ADC_Pin_35) / R_Shunt_2;
 
   Time_Compute = millis();
-  // Keeping the other possibility to work with 4 current sensing channels on low-side
-
-  // Current_ADC_0_Low_Side = (Corrected_Voltage_ADC0) / R_Shunt_1
-  // Current_ADC_1_Low_Side = (Corrected_Voltage_ADC1) / R_Shunt_2
-  // Current_ADC_2_Low_Side = (Corrected_Voltage_ADC2) / R_Shunt_3
-  // Current_ADC_3_Low_Side = (Corrected_Voltage_ADC3) / R_Shunt_4
-
-  // Voltage at the bridge : 10 channels
-
-  // Serial.println("Voltage at Bridge ");
-  // Serial.print(Voltage_Bridge_ADC0.average(), 6);
-  // Serial.print(",");
-  // Serial.print(Voltage_Bridge_ADC1.average(), 6);
-  // Serial.print(",");
-  // Serial.print(Voltage_Bridge_ADC2.average(), 6);
-  // Serial.print(",");
-  // Serial.print(Voltage_Bridge_ADC3.average(), 6);
-  // Serial.print(",");
-  // I decide to change the order here, to see all the high side first, and then behind resistor.
-  // Serial.print(Voltage_Bridge_ADC_Pin_32.average(), 6);
-  // Serial.print(",");
-  // Serial.print(Voltage_Bridge_ADC_Pin_33.average(), 6);
-  // Serial.print(",");
-  // Serial.print(Voltage_Bridge_ADC_Pin_34.average(), 6);
-  // Serial.print(",");
-  // Serial.print(Voltage_Bridge_ADC_Pin_35.average(), 6);
-  // Serial.print(",");
-  // Serial.print(Voltage_Bridge_ADC_Pin_36.average(), 6);
-  // Serial.print(",");
-  // Serial.println(Voltage_Bridge_ADC_Pin_39.average(), 6);
-  //Serial.print(",");
-
-  // std of voltage bridge
-  // Serial.println("Standard deviation of Voltage at Bridge: ");
-  // Serial.print(Voltage_Bridge_ADC0.pop_stdev() * 1000, 6);
-  // Serial.print(",");
-  // Serial.print(Voltage_Bridge_ADC1.pop_stdev() * 1000, 6);
-  // Serial.print(",");
-  // Serial.print(Voltage_Bridge_ADC2.pop_stdev() * 1000, 6);
-  // Serial.print(",");
-  // Serial.print(Voltage_Bridge_ADC3.pop_stdev() * 1000, 6);
-  // Serial.print(",");
-  // Serial.print(Voltage_Bridge_ADC_Pin_32.pop_stdev() * 1000, 6);
-  // Serial.print(",");
-  // Serial.print(Voltage_Bridge_ADC_Pin_33.pop_stdev() * 1000, 6);
-  // Serial.print(",");
-  // Serial.print(Voltage_Bridge_ADC_Pin_34.pop_stdev() * 1000, 6);
-  // Serial.print(",");
-  // Serial.print(Voltage_Bridge_ADC_Pin_35.pop_stdev() * 1000, 6);
-  // Serial.print(",");
-  // Serial.print(Voltage_Bridge_ADC_Pin_36.pop_stdev() * 1000, 6);
-  // Serial.print(",");
-  // Serial.println(Voltage_Bridge_ADC_Pin_39.pop_stdev() * 1000, 6);
-
-  // Search Voltage (corrected by approx factor 10 if R2=10*R1) allowing measurement
-  // until approx 25V securely (security margin to 33V)
 
   Serial.println("Search Voltage :");
   Serial.print(Corrected_Voltage_ADC0, 6);
@@ -382,97 +331,482 @@ void loop(void)
   // Serial.println((millis() - Time_3) );
 
   display.clearDisplay();
-  display.setTextSize(4);
+  // display.setTextSize(4);
   display.setTextColor(WHITE);
 
   switch (Number_Touching)
   {
   case 0:
 
+    display.setCursor(0, 0);
+    display.setTextSize(1);
+    display.println("A0 ");
     display.setCursor(0, 17);
-
-    // display.println("A0 ");
-    // display.setCursor(40, 0);
+    display.setTextSize(4);
     display.print(Corrected_Voltage_ADC0);
-    // display.setCursor(110, 0);
-    // display.print("V");
     display.display();
     break;
+
   case 1:
 
-    display.setCursor(0, 17);
-    display.println("A1 ");
-    display.setCursor(40, 17);
-    display.print(Corrected_Voltage_ADC1);
-    display.setCursor(110, 17);
-    display.print("V");
-    display.display();
-    break;
-  case 2:
-    display.setCursor(0, 34);
-    display.println("32 ");
-    display.setCursor(40, 34);
-    display.print(Corrected_Voltage_ADC_Pin_32);
-    display.setCursor(110, 34);
-    display.print("V");
-    display.display();
-    break;
-  case 3:
-
-    display.setCursor(0, 51);
-    display.println("33 ");
-    display.setCursor(40, 51);
-    display.print(Corrected_Voltage_ADC_Pin_33);
-    display.setCursor(110, 51);
-    display.print("V");
-    display.display();
-    break;
-  default:
     display.setCursor(0, 0);
+    display.setTextSize(1);
+    display.println("A0 ");
+    display.setCursor(0, 16);
+    display.setTextSize(2);
+    display.print(Corrected_Voltage_ADC0);
+
+    display.setCursor(0, 34);
+    display.setTextSize(1);
+    display.println("A1 ");
+    display.setCursor(0, 50);
+    display.setTextSize(2);
+    display.print(Corrected_Voltage_ADC1);
+    display.display();
+    break;
+
+  case 2:
+
+    display.setCursor(0, 0);
+    display.setTextSize(1);
     display.println("A0 ");
     display.setCursor(40, 0);
     display.print(Corrected_Voltage_ADC0);
-    display.setCursor(110, 0);
-    display.print("V");
+
+    display.setCursor(0, 17);
+    display.setTextSize(1);
+    display.println("A1 ");
+    display.setCursor(40, 17);
+    display.print(Corrected_Voltage_ADC1);
+
+    display.setCursor(0, 34);
+    display.setTextSize(1);
+    display.println("A2 ");
+    display.setCursor(40, 34);
+    display.print(Corrected_Voltage_ADC2);
+    display.display();
+    break;
+
+  case 3:
+
+    display.setCursor(0, 0);
+    display.setTextSize(1);
+    display.println("A0 ");
+    display.setCursor(40, 0);
+    display.print(Corrected_Voltage_ADC0);
+
+    display.setCursor(0, 17);
+    display.setTextSize(1);
+    display.println("A1 ");
+    display.setCursor(40, 17);
+    display.print(Corrected_Voltage_ADC1);
+
+    display.setCursor(0, 34);
+    display.setTextSize(1);
+    display.println("A2 ");
+    display.setCursor(40, 34);
+    display.print(Corrected_Voltage_ADC2);
+
+    display.setCursor(0, 51);
+    display.setTextSize(1);
+    display.println("A3 ");
+    display.setCursor(40, 51);
+    display.print(Corrected_Voltage_ADC3);
+    display.display();
+    break;
+
+  case 4:
+
+    display.setCursor(0, 0);
+    display.setTextSize(1);
+    display.println("A0 ");
+    display.setCursor(40, 0);
+    display.print(Corrected_Voltage_ADC0);
+
+    display.setCursor(0, 8);
+    display.setTextSize(1);
+    display.println("A1 ");
+    display.setCursor(40, 8);
+    display.print(Corrected_Voltage_ADC1);
+
+    display.setCursor(0, 16);
+    display.setTextSize(1);
+    display.println("A2 ");
+    display.setCursor(40, 16);
+    display.print(Corrected_Voltage_ADC2);
+
+    display.setCursor(0, 24);
+    display.setTextSize(1);
+    display.println("A3 ");
+    display.setCursor(40, 24);
+    display.print(Corrected_Voltage_ADC3);
+
+    display.setCursor(0, 32);
+    display.setTextSize(1);
+    display.println("34 ");
+    display.setCursor(40, 32);
+    display.print(Corrected_Voltage_ADC_Pin_34);
+    display.display();
+    break;
+
+  case 5:
+
+    display.setCursor(0, 0);
+    display.setTextSize(1);
+    display.println("A0 ");
+    display.setCursor(40, 0);
+    display.print(Corrected_Voltage_ADC0);
+
+    display.setCursor(0, 8);
+    display.setTextSize(1);
+    display.println("A1 ");
+    display.setCursor(40, 8);
+    display.print(Corrected_Voltage_ADC1);
+
+    display.setCursor(0, 16);
+    display.setTextSize(1);
+    display.println("A2 ");
+    display.setCursor(40, 16);
+    display.print(Corrected_Voltage_ADC2);
+
+    display.setCursor(0, 24);
+    display.setTextSize(1);
+    display.println("A3 ");
+    display.setCursor(40, 24);
+    display.print(Corrected_Voltage_ADC3);
+
+    display.setCursor(0, 32);
+    display.setTextSize(1);
+    display.println("34 ");
+    display.setCursor(40, 32);
+    display.print(Corrected_Voltage_ADC_Pin_34);
+
+    display.setCursor(0, 40);
+    display.setTextSize(1);
+    display.println("35 ");
+    display.setCursor(40, 40);
+    display.print(Corrected_Voltage_ADC_Pin_35);
+    display.display();
+    break;
+
+  case 6:
+
+    display.setCursor(0, 0);
+    display.setTextSize(1);
+    display.println("A0 ");
+    display.setCursor(40, 0);
+    display.print(Corrected_Voltage_ADC0);
+
+    display.setCursor(0, 8);
+    display.setTextSize(1);
+    display.println("A1 ");
+    display.setCursor(40, 8);
+    display.print(Corrected_Voltage_ADC1);
+
+    display.setCursor(0, 16);
+    display.setTextSize(1);
+    display.println("A2 ");
+    display.setCursor(40, 16);
+    display.print(Corrected_Voltage_ADC2);
+
+    display.setCursor(0, 24);
+    display.setTextSize(1);
+    display.println("A3 ");
+    display.setCursor(40, 24);
+    display.print(Corrected_Voltage_ADC3);
+
+    display.setCursor(0, 32);
+    display.setTextSize(1);
+    display.println("34 ");
+    display.setCursor(40, 32);
+    display.print(Corrected_Voltage_ADC_Pin_34);
+
+    display.setCursor(0, 40);
+    display.setTextSize(1);
+    display.println("35 ");
+    display.setCursor(40, 40);
+    display.print(Corrected_Voltage_ADC_Pin_35);
+
+    display.setCursor(0, 48);
+    display.setTextSize(1);
+    display.println("32 ");
+    display.setCursor(40, 48);
+    display.print(Corrected_Voltage_ADC_Pin_32);
+    display.display();
+    break;
+
+  case 7:
+
+    display.setCursor(0, 0);
+    display.setTextSize(1);
+    display.println("A0 ");
+    display.setCursor(40, 0);
+    display.print(Corrected_Voltage_ADC0);
+
+    display.setCursor(0, 8);
+    display.setTextSize(1);
+    display.println("A1 ");
+    display.setCursor(40, 8);
+    display.print(Corrected_Voltage_ADC1);
+
+    display.setCursor(0, 16);
+    display.setTextSize(1);
+    display.println("A2 ");
+    display.setCursor(40, 16);
+    display.print(Corrected_Voltage_ADC2);
+
+    display.setCursor(0, 24);
+    display.setTextSize(1);
+    display.println("A3 ");
+    display.setCursor(40, 24);
+    display.print(Corrected_Voltage_ADC3);
+
+    display.setCursor(0, 32);
+    display.setTextSize(1);
+    display.println("34 ");
+    display.setCursor(40, 32);
+    display.print(Corrected_Voltage_ADC_Pin_34);
+
+    display.setCursor(0, 40);
+    display.setTextSize(1);
+    display.println("35 ");
+    display.setCursor(40, 40);
+    display.print(Corrected_Voltage_ADC_Pin_35);
+
+    display.setCursor(0, 48);
+    display.setTextSize(1);
+    display.println("32 ");
+    display.setCursor(40, 48);
+    display.print(Corrected_Voltage_ADC_Pin_32);
+
+    display.setCursor(0, 56);
+    display.setTextSize(1);
+    display.println("33 ");
+    display.setCursor(40, 56);
+    display.print(Corrected_Voltage_ADC_Pin_33);
+    display.display();
+    break;
+
+  case 8:
+
+    display.setCursor(0, 0);
+    display.setTextSize(1);
+    display.println("A0-A1 Current(mA)");
+    display.setCursor(0, 16);
+    display.setTextSize(2);
+    display.print(Current_ADC_0_1_High_Side);
+
+    display.setCursor(0, 34);
+    display.setTextSize(1);
+    display.println("A0-A1 Diff voltage(V)");
+    display.setCursor(0, 50);
+    display.setTextSize(2);
+    display.print(Voltage_Diff_ADC_0_1);
+    display.display();
+    break;
+
+  case 9:
+
+    display.setCursor(0, 0);
+    display.setTextSize(1);
+    display.println("A0-A1 Current(mA)");
+    display.setCursor(0, 8);
+    display.print(Current_ADC_0_1_High_Side);
+
+    display.setCursor(0, 16);
+    display.println("A0-A1 Diff voltage(V)");
+    display.setCursor(0, 24);
+    display.print(Voltage_Diff_ADC_0_1);
+
+    display.setCursor(0, 40);
+    display.println("A2");
+    display.setCursor(40, 40);
+    display.print(Corrected_Voltage_ADC2);
+
+    display.setCursor(0, 56);
+    display.println("A3");
+    display.setCursor(40, 56);
+    display.print(Corrected_Voltage_ADC3);
+    display.display();
+    break;
+
+  case 10:
+
+    display.setCursor(0, 0);
+    display.setTextSize(1);
+    display.println("A0-A1 Current(mA)");
+    display.setCursor(0, 8);
+    display.print(Current_ADC_0_1_High_Side);
+
+    display.setCursor(0, 16);
+    display.println("A0-A1 Diff voltage(V)");
+    display.setCursor(0, 24);
+    display.print(Voltage_Diff_ADC_0_1);
+
+    display.setCursor(0, 32);
+    display.println("A2-A3 Current(mA)");
+    display.setCursor(0, 40);
+    display.print(Current_ADC_2_3_High_Side);
+
+    display.setCursor(0, 48);
+    display.println("A2-A3 Diff voltage(V)");
+    display.setCursor(0, 56);
+    display.print(Voltage_Diff_ADC_2_3);
+    display.display();
+    break;
+
+  case 11:
+
+    display.setCursor(0, 0);
+    display.setTextSize(1);
+    display.println("A0-A1(mA)");
+    display.setCursor(70, 0);
+    display.print(Current_ADC_0_1_High_Side);
+
+    display.setCursor(0, 8);
+    display.println("A0-A1(V)");
+    display.setCursor(70, 8);
+    display.print(Voltage_Diff_ADC_0_1);
+
+    display.setCursor(0, 16);
+    display.println("A2-A3(mA)");
+    display.setCursor(70, 16);
+    display.print(Current_ADC_2_3_High_Side);
+
+    display.setCursor(0, 24);
+    display.println("A2-A3(V)");
+    display.setCursor(70, 24);
+    display.print(Voltage_Diff_ADC_2_3);
+
+    display.setCursor(0, 32);
+    display.setTextSize(1);
+    display.println("34 ");
+    display.setCursor(70, 32);
+    display.print(Corrected_Voltage_ADC_Pin_34);
+
+    display.setCursor(0, 40);
+    display.setTextSize(1);
+    display.println("35 ");
+    display.setCursor(70, 40);
+    display.print(Corrected_Voltage_ADC_Pin_35);
+
+    display.setCursor(0, 48);
+    display.setTextSize(1);
+    display.println("32 ");
+    display.setCursor(70, 48);
+    display.print(Corrected_Voltage_ADC_Pin_32);
+
+    display.setCursor(0, 56);
+    display.setTextSize(1);
+    display.println("33 ");
+    display.setCursor(70, 56);
+    display.print(Corrected_Voltage_ADC_Pin_33);
+    display.display();
+    break;
+
+  default:
+
+    display.setCursor(0, 0);
+    display.setTextSize(1);
+    display.println("A0 ");
+    display.setCursor(0, 17);
+    display.setTextSize(4);
+    display.print(Corrected_Voltage_ADC0);
     display.display();
     break;
   }
-
-  // // GPIO33
-  // if (Number_Touching == 0)
-  // {
-  //   display.setCursor(0, 0);
-  //   display.println("A0 ");
-  //   display.setCursor(40, 0);
-  //   display.print(Corrected_Voltage_ADC0);
-  //   display.setCursor(110, 0);
-  //   display.print("V");
-  // }
-
-  // // GPIO32
-  // display.setCursor(0, 17);
-  // display.println("A1 ");
-  // display.setCursor(40, 17);
-  // display.print(Corrected_Voltage_ADC1);
-  // display.setCursor(110, 17);
-  // display.print("V");
-
-  // // GPIO35
-  // display.setCursor(0, 34);
-  // display.println("32 ");
-  // display.setCursor(40, 34);
-  // display.print(Corrected_Voltage_ADC_Pin_32);
-  // display.setCursor(110, 34);
-  // display.print("V");
-
-  // // GPIO34
-  // display.setCursor(0, 51);
-  // display.println("33 ");
-  // display.setCursor(40, 51);
-  // display.print(Corrected_Voltage_ADC_Pin_33);
-  // display.setCursor(110, 51);
-  // display.print("V");
-
-  // display.display();
-  //  delay(5000);
 }
+// // GPIO33
+// if (Number_Touching == 0)
+// {
+//   display.setCursor(0, 0);
+//   display.println("A0 ");
+//   display.setCursor(40, 0);
+//   display.print(Corrected_Voltage_ADC0);
+//   display.setCursor(110, 0);
+//   display.print("V");
+// }
+
+// // GPIO32
+// display.setCursor(0, 17);
+// display.println("A1 ");
+// display.setCursor(40, 17);
+// display.print(Corrected_Voltage_ADC1);
+// display.setCursor(110, 17);
+// display.print("V");
+
+// // GPIO35
+// display.setCursor(0, 34);
+// display.println("32 ");
+// display.setCursor(40, 34);
+// display.print(Corrected_Voltage_ADC_Pin_32);
+// display.setCursor(110, 34);
+// display.print("V");
+
+// // GPIO34
+// display.setCursor(0, 51);
+// display.println("33 ");
+// display.setCursor(40, 51);
+// display.print(Corrected_Voltage_ADC_Pin_33);
+// display.setCursor(110, 51);
+// display.print("V");
+
+// display.display();
+//  delay(5000);
+
+// Keeping the other possibility to work with 4 current sensing channels on low-side
+
+// Current_ADC_0_Low_Side = (Corrected_Voltage_ADC0) / R_Shunt_1
+// Current_ADC_1_Low_Side = (Corrected_Voltage_ADC1) / R_Shunt_2
+// Current_ADC_2_Low_Side = (Corrected_Voltage_ADC2) / R_Shunt_3
+// Current_ADC_3_Low_Side = (Corrected_Voltage_ADC3) / R_Shunt_4
+
+// Voltage at the bridge : 10 channels
+
+// Serial.println("Voltage at Bridge ");
+// Serial.print(Voltage_Bridge_ADC0.average(), 6);
+// Serial.print(",");
+// Serial.print(Voltage_Bridge_ADC1.average(), 6);
+// Serial.print(",");
+// Serial.print(Voltage_Bridge_ADC2.average(), 6);
+// Serial.print(",");
+// Serial.print(Voltage_Bridge_ADC3.average(), 6);
+// Serial.print(",");
+// I decide to change the order here, to see all the high side first, and then behind resistor.
+// Serial.print(Voltage_Bridge_ADC_Pin_32.average(), 6);
+// Serial.print(",");
+// Serial.print(Voltage_Bridge_ADC_Pin_33.average(), 6);
+// Serial.print(",");
+// Serial.print(Voltage_Bridge_ADC_Pin_34.average(), 6);
+// Serial.print(",");
+// Serial.print(Voltage_Bridge_ADC_Pin_35.average(), 6);
+// Serial.print(",");
+// Serial.print(Voltage_Bridge_ADC_Pin_36.average(), 6);
+// Serial.print(",");
+// Serial.println(Voltage_Bridge_ADC_Pin_39.average(), 6);
+//Serial.print(",");
+
+// std of voltage bridge
+// Serial.println("Standard deviation of Voltage at Bridge: ");
+// Serial.print(Voltage_Bridge_ADC0.pop_stdev() * 1000, 6);
+// Serial.print(",");
+// Serial.print(Voltage_Bridge_ADC1.pop_stdev() * 1000, 6);
+// Serial.print(",");
+// Serial.print(Voltage_Bridge_ADC2.pop_stdev() * 1000, 6);
+// Serial.print(",");
+// Serial.print(Voltage_Bridge_ADC3.pop_stdev() * 1000, 6);
+// Serial.print(",");
+// Serial.print(Voltage_Bridge_ADC_Pin_32.pop_stdev() * 1000, 6);
+// Serial.print(",");
+// Serial.print(Voltage_Bridge_ADC_Pin_33.pop_stdev() * 1000, 6);
+// Serial.print(",");
+// Serial.print(Voltage_Bridge_ADC_Pin_34.pop_stdev() * 1000, 6);
+// Serial.print(",");
+// Serial.print(Voltage_Bridge_ADC_Pin_35.pop_stdev() * 1000, 6);
+// Serial.print(",");
+// Serial.print(Voltage_Bridge_ADC_Pin_36.pop_stdev() * 1000, 6);
+// Serial.print(",");
+// Serial.println(Voltage_Bridge_ADC_Pin_39.pop_stdev() * 1000, 6);
+
+// Search Voltage (corrected by approx factor 10 if R2=10*R1) allowing measurement
+// until approx 25V securely (security margin to 33V)
