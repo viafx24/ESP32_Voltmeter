@@ -482,7 +482,7 @@ void Display_OLED()
     display.display();
     break;
 
-  case 8:
+  case 11:
 
     display.setCursor(0, 0);
     display.setTextSize(1);
@@ -500,7 +500,7 @@ void Display_OLED()
     display.display();
     break;
 
-  case 9:
+  case 10:
 
     display.setCursor(0, 0);
     display.setTextSize(1);
@@ -525,7 +525,7 @@ void Display_OLED()
     display.display();
     break;
 
-  case 10:
+  case 9:
 
     display.setCursor(0, 0);
     display.setTextSize(1);
@@ -550,7 +550,7 @@ void Display_OLED()
     display.display();
     break;
 
-  case 11:
+  case 8:
 
     display.setCursor(0, 0);
     display.setTextSize(1);
