@@ -117,7 +117,7 @@ boolean Trigger_Time_Zero_For_Wifi = false;
 //float Current_ADC_3_Low_Side  ;
 
 //parameter for capacititve touch
-uint8_t threshold = 40;
+uint8_t threshold = 55;
 uint8_t Number_Touching = 0;
 volatile unsigned long sinceLastTouch = 0;
 
