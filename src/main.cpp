@@ -133,18 +133,6 @@ uint16_t Count;
 const uint16_t Size_Array = 4096;
 float MyADS1115array[Size_Array];
 
-void Send_Data_By_Wifi(String Data_wifi, WiFiClient client)
-{
-    Serial.println(client);
-    if (client)
-    {
-        if (client.connected())
-        {
-            client.println(Data_wifi);
-            Serial.println("test");
-        }
-    }
-}
 
 void Compute_Voltage_from_ADS1115()
 {
@@ -242,10 +230,8 @@ void Display_OLED()
         display.print(Corrected_Voltage_ADC0);
         display.display();
 
-        Data_Serial = String(String(Time) + "," + Corrected_Voltage_ADC0);
-Serial.println
-
-        Data_wifi = String(String(Time - Time_Wifi_Zero) + "," + Corrected_Voltage_ADC0);
+        //Data_Serial = String(String(Time) + "," + Corrected_Voltage_ADC0);
+        Data_wifi = String(String(Time) + "," + Corrected_Voltage_ADC0);
 
         break;
 
@@ -265,6 +251,10 @@ Serial.println
         display.setTextSize(2);
         display.print(Corrected_Voltage_ADC1);
         display.display();
+
+
+
+        Data_wifi = String(String(Time) + "," + Corrected_Voltage_ADC0 + "," + Corrected_Voltage_ADC1);
         break;
 
     case 2:
@@ -287,6 +277,10 @@ Serial.println
         display.setCursor(40, 34);
         display.print(Corrected_Voltage_ADC2);
         display.display();
+
+Data_wifi = String(String(Time) + "," + Corrected_Voltage_ADC0 + "," + Corrected_Voltage_ADC1 +
+ "," + Corrected_Voltage_ADC2);
+
         break;
 
     case 3:
@@ -315,6 +309,10 @@ Serial.println
         display.setCursor(40, 51);
         display.print(Corrected_Voltage_ADC3);
         display.display();
+
+Data_wifi = String(String(Time) + "," + Corrected_Voltage_ADC0 + "," + Corrected_Voltage_ADC1 +
+ "," + Corrected_Voltage_ADC2 + "," + Corrected_Voltage_ADC3 );
+
         break;
 
     case 4:
@@ -349,6 +347,11 @@ Serial.println
         display.setCursor(40, 32);
         display.print(Corrected_Voltage_ADC_Pin_34);
         display.display();
+
+
+Data_wifi = String(String(Time) + "," + Corrected_Voltage_ADC0 + "," + Corrected_Voltage_ADC1 +
+"," +  Corrected_Voltage_ADC2 + "," +  Corrected_Voltage_ADC3 + "," + Corrected_Voltage_ADC_Pin_34);
+
         break;
 
     case 5:
@@ -389,6 +392,11 @@ Serial.println
         display.setCursor(40, 40);
         display.print(Corrected_Voltage_ADC_Pin_35);
         display.display();
+
+Data_wifi = String(String(Time) + "," + Corrected_Voltage_ADC0 + "," + Corrected_Voltage_ADC1 + "," +
+"," +  Corrected_Voltage_ADC2 + "," + Corrected_Voltage_ADC3 + "," + Corrected_Voltage_ADC_Pin_34 +
+ "," + Corrected_Voltage_ADC_Pin_35);
+
         break;
 
     case 6:
@@ -435,6 +443,11 @@ Serial.println
         display.setCursor(40, 48);
         display.print(Corrected_Voltage_ADC_Pin_32);
         display.display();
+
+Data_wifi = String(String(Time) + "," + Corrected_Voltage_ADC0 + "," + Corrected_Voltage_ADC1 +
+"," +  Corrected_Voltage_ADC2 + "," + Corrected_Voltage_ADC3 + "," + Corrected_Voltage_ADC_Pin_34 +
+"," +  Corrected_Voltage_ADC_Pin_35 + "," + Corrected_Voltage_ADC_Pin_32 );
+
         break;
 
     case 7:
@@ -487,6 +500,11 @@ Serial.println
         display.setCursor(40, 56);
         display.print(Corrected_Voltage_ADC_Pin_33);
         display.display();
+
+Data_wifi = String(String(Time) + "," + Corrected_Voltage_ADC0 + "," + Corrected_Voltage_ADC1 +
+"," +  Corrected_Voltage_ADC2 + "," + Corrected_Voltage_ADC3 + "," + Corrected_Voltage_ADC_Pin_34 + 
+"," + Corrected_Voltage_ADC_Pin_35 + "," + Corrected_Voltage_ADC_Pin_32 + "," + Corrected_Voltage_ADC_Pin_33);
+
         break;
 
     case 11:
@@ -505,6 +523,9 @@ Serial.println
         display.setTextSize(2);
         display.print(Voltage_Diff_ADC_0_1);
         display.display();
+
+Data_wifi = String(String(Time) + "," + Current_ADC_0_1_High_Side + "," + Voltage_Diff_ADC_0_1 );
+
         break;
 
     case 10:
@@ -530,6 +551,11 @@ Serial.println
         display.setCursor(40, 56);
         display.print(Corrected_Voltage_ADC3);
         display.display();
+
+
+Data_wifi = String(String(Time) + "," + Current_ADC_0_1_High_Side + "," + Voltage_Diff_ADC_0_1 + "," +
+"," +  Corrected_Voltage_ADC2 + "," + Corrected_Voltage_ADC3);
+
         break;
 
     case 9:
@@ -555,6 +581,11 @@ Serial.println
         display.setCursor(0, 56);
         display.print(Voltage_Diff_ADC_2_3);
         display.display();
+
+Data_wifi = String(String(Time) + "," + Current_ADC_0_1_High_Side + "," + Voltage_Diff_ADC_0_1 +
+"," +  Current_ADC_2_3_High_Side + "," + Voltage_Diff_ADC_2_3);
+
+
         break;
 
     case 8:
@@ -604,6 +635,12 @@ Serial.println
         display.setCursor(70, 56);
         display.print(Corrected_Voltage_ADC_Pin_33);
         display.display();
+
+Data_wifi = String(String(Time) + "," + Current_ADC_0_1_High_Side + "," + Voltage_Diff_ADC_0_1 +
+"," +  Current_ADC_2_3_High_Side + "," + Voltage_Diff_ADC_2_3 + "," + Corrected_Voltage_ADC_Pin_34 +
+"," +  Corrected_Voltage_ADC_Pin_35 + "," + Corrected_Voltage_ADC_Pin_32 + "," + Corrected_Voltage_ADC_Pin_33);
+
+
         break;
 
     default:
@@ -615,6 +652,9 @@ Serial.println
         display.setTextSize(4);
         display.print(Corrected_Voltage_ADC0);
         display.display();
+
+        Data_wifi = String(String(Time) + "," + Corrected_Voltage_ADC0);
+
         break;
     }
 }
@@ -803,13 +843,10 @@ void loop(void)
         Compute_Voltage_from_ADS1115();
 
         Time = millis();
-      //  Serial.println(Time);
         Display_OLED();
 
-        Diff_Time= Time - Time_from_Awake;
-       // Serial.println(Diff_Time);
-       // Serial.println(Number_Touching);        
-
+        Diff_Time= Time - Time_from_Awake; // Diff_Time need to be able to be negative thus signed
+    
 
         if (Diff_Time > 20000)
         {
@@ -843,9 +880,11 @@ void loop(void)
                 Compute_Voltage_from_ESP32();
                 Compute_Voltage_from_ADS1115();
 
-                Time = millis();
+                Time = millis()-Time_Wifi_Zero;
 
                 Display_OLED();
+
+                client.println(Data_wifi);
 
                 if (Touch_WIFI == false)
                 {
