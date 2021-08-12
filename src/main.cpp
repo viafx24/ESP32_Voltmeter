@@ -658,6 +658,7 @@ void Choose_WIFI()
     else if (Touch_WIFI == true)
     {
       Touch_WIFI = false;
+      
  //     Serial.println("Wifi stopped");
     }
   }
@@ -793,6 +794,12 @@ void loop(void)
         Time = millis();
 
         Display_OLED();
+
+        if (Touch_WIFI==false)
+        {
+            client.stop();
+            break;
+        }
       }
     }
     // if there is no client.connected
