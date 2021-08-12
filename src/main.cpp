@@ -38,10 +38,14 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 Adafruit_ADS1115 ads1115;
 
 //  parameters that should be easily modify
+// parameter before analyzing bug of OLED programs
+// const uint16_t Number_Samples_ADC_ESP32 = 48;
+// const uint16_t Number_Samples_ADC_ESP32_Second_Loop = 20;
+// const uint16_t Number_Samples_ADS1115 = 20;
 
 const uint16_t Number_Samples_ADC_ESP32 = 48;
-const uint16_t Number_Samples_ADC_ESP32_Second_Loop = 20;
-const uint16_t Number_Samples_ADS1115 = 20;
+const uint16_t Number_Samples_ADC_ESP32_Second_Loop = 1;
+const uint16_t Number_Samples_ADS1115 = 1;
 
 //uint32_t R0 = 97700;
 uint32_t R1 = 97700;
@@ -108,6 +112,7 @@ float Current_ADC_GPIO34_GPIO35_High_Side;
 unsigned long Time_from_Begin;
 unsigned long Time_from_Awake;
 unsigned long Time_Wifi_Zero;
+long Diff_Time;
 unsigned long Time;
 boolean Trigger_Time_Zero_For_Wifi = false;
 
@@ -221,7 +226,7 @@ void Display_OLED()
 {
 
     // remove this first line if bug/overflow appears randomly
-    display.ssd1306_command(SSD1306_DISPLAYON);
+    //display.ssd1306_command(SSD1306_DISPLAYON);
     display.clearDisplay();
     display.setTextColor(WHITE);
 
@@ -238,6 +243,8 @@ void Display_OLED()
         display.display();
 
         Data_Serial = String(String(Time) + "," + Corrected_Voltage_ADC0);
+Serial.println
+
         Data_wifi = String(String(Time - Time_Wifi_Zero) + "," + Corrected_Voltage_ADC0);
 
         break;
@@ -619,6 +626,7 @@ void Choose_Program_Display_Next()
     sinceLastTouch = millis();
 
     Time_from_Awake = millis();
+    //Serial.println(Time_from_Awake);
 
     if (Light_Sleep == true) // to only awake the ESP without doing anithing else
     {
@@ -627,11 +635,14 @@ void Choose_Program_Display_Next()
     else if (Light_Sleep == false)
     {
         Number_Touching++;
-        //    Serial.println(Number_Touching);
-        if (Number_Touching >= 12)
+        
+        if (Number_Touching > 11)
         {
             Number_Touching = 0;
+            
         }
+
+        Serial.println(Number_Touching);
     }
 }
 
@@ -642,6 +653,8 @@ void Choose_Program_Display_Previous()
     sinceLastTouch = millis();
 
     Time_from_Awake = millis();
+    //Serial.println(Time_from_Awake);
+
 
     if (Light_Sleep == true) // to only awake the ESP without doing anithing else
     {
@@ -650,11 +663,14 @@ void Choose_Program_Display_Previous()
     else if (Light_Sleep == false)
     {
         Number_Touching--;
-        //    Serial.println(Number_Touching);
+        
+        
         if (Number_Touching < 0)
         {
             Number_Touching = 11;
         }
+
+        Serial.println(Number_Touching);
     }
 }
 
@@ -665,6 +681,7 @@ void Choose_WIFI()
     sinceLastTouch = millis();
 
     Time_from_Awake = millis();
+    //Serial.println(Time_from_Awake);
 
     if (Light_Sleep == true) // to only awake the ESP without doing anithing else
     {
@@ -692,7 +709,7 @@ void setup(void)
 
     Serial.begin(115200);
     ads1115.begin();
-
+    Serial.println(Number_Touching);
     // wifi stuff
 
     //  This part of code will try create static IP address
@@ -772,6 +789,9 @@ void setup(void)
     Time_from_Begin = millis();
 
     Time_from_Awake = Time_from_Begin;
+
+    Number_Touching=0;// looks to set at 1 automatically thus reset to zero at the end of setup
+    Serial.println(Number_Touching);
 }
 
 void loop(void)
@@ -783,13 +803,22 @@ void loop(void)
         Compute_Voltage_from_ADS1115();
 
         Time = millis();
-
+      //  Serial.println(Time);
         Display_OLED();
 
-        if (Time - Time_from_Awake > 20000)
-        {
+        Diff_Time= Time - Time_from_Awake;
+       // Serial.println(Diff_Time);
+       // Serial.println(Number_Touching);        
 
-            display.ssd1306_command(SSD1306_DISPLAYOFF);
+
+        if (Diff_Time > 20000)
+        {
+            display.clearDisplay();
+            display.setTextSize(2);
+            display.setCursor(0, 24);
+            display.println("Sleeping");
+            display.display();
+            //display.ssd1306_command(SSD1306_DISPLAYOFF); // remove because generate overflow
             Light_Sleep = true;
             delay(100);
             esp_light_sleep_start();
