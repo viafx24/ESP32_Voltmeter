@@ -21,6 +21,9 @@ IPAddress subnet(255, 255, 255, 0);
 String Data_wifi;
 String Data_Serial;
 
+boolean Touch_WIFI = false;
+boolean Light_Sleep = false;
+
 WiFiServer server(80);
 
 // OLED parameter and objects
@@ -103,6 +106,7 @@ float Voltage_Diff_ADC_2_3;
 float Current_ADC_GPIO34_GPIO35_High_Side;
 
 unsigned long Time_from_Begin;
+unsigned long Time_from_Awake;
 unsigned long Time_Wifi_Zero;
 unsigned long Time;
 boolean Trigger_Time_Zero_For_Wifi = false;
@@ -126,7 +130,7 @@ float MyADS1115array[Size_Array];
 
 void Send_Data_By_Wifi(String Data_wifi, WiFiClient client)
 {
-Serial.println(client);
+  Serial.println(client);
   if (client)
   {
     if (client.connected())
@@ -215,410 +219,447 @@ void Compute_Voltage_from_ESP32()
 
 void Display_OLED()
 {
-    display.clearDisplay();
-    display.setTextColor(WHITE);
-
-      switch (Number_Touching)
-    {
-    case 0:
-
-      display.setCursor(0, 0);
-      display.setTextSize(1);
-      display.println("A0 ");
-      display.setCursor(0, 17);
-      display.setTextSize(4);
-      display.print(Corrected_Voltage_ADC0);
-      display.display();
-
-      Data_Serial = String(String(Time) + "," + Corrected_Voltage_ADC0);
-      Data_wifi = String(String(Time - Time_Wifi_Zero) + "," + Corrected_Voltage_ADC0);
-
-      Serial.println(Data_Serial);
-      Serial.println(client);
-      Send_Data_By_Wifi(Data_wifi, client);
-
-      break;
-
-    case 1:
-
-      display.setCursor(0, 0);
-      display.setTextSize(1);
-      display.println("A0 ");
-      display.setCursor(0, 16);
-      display.setTextSize(2);
-      display.print(Corrected_Voltage_ADC0);
-
-      display.setCursor(0, 34);
-      display.setTextSize(1);
-      display.println("A1 ");
-      display.setCursor(0, 50);
-      display.setTextSize(2);
-      display.print(Corrected_Voltage_ADC1);
-      display.display();
-      break;
-
-    case 2:
-
-      display.setCursor(0, 0);
-      display.setTextSize(1);
-      display.println("A0 ");
-      display.setCursor(40, 0);
-      display.print(Corrected_Voltage_ADC0);
-
-      display.setCursor(0, 17);
-      display.setTextSize(1);
-      display.println("A1 ");
-      display.setCursor(40, 17);
-      display.print(Corrected_Voltage_ADC1);
-
-      display.setCursor(0, 34);
-      display.setTextSize(1);
-      display.println("A2 ");
-      display.setCursor(40, 34);
-      display.print(Corrected_Voltage_ADC2);
-      display.display();
-      break;
-
-    case 3:
-
-      display.setCursor(0, 0);
-      display.setTextSize(1);
-      display.println("A0 ");
-      display.setCursor(40, 0);
-      display.print(Corrected_Voltage_ADC0);
-
-      display.setCursor(0, 17);
-      display.setTextSize(1);
-      display.println("A1 ");
-      display.setCursor(40, 17);
-      display.print(Corrected_Voltage_ADC1);
-
-      display.setCursor(0, 34);
-      display.setTextSize(1);
-      display.println("A2 ");
-      display.setCursor(40, 34);
-      display.print(Corrected_Voltage_ADC2);
-
-      display.setCursor(0, 51);
-      display.setTextSize(1);
-      display.println("A3 ");
-      display.setCursor(40, 51);
-      display.print(Corrected_Voltage_ADC3);
-      display.display();
-      break;
-
-    case 4:
-
-      display.setCursor(0, 0);
-      display.setTextSize(1);
-      display.println("A0 ");
-      display.setCursor(40, 0);
-      display.print(Corrected_Voltage_ADC0);
-
-      display.setCursor(0, 8);
-      display.setTextSize(1);
-      display.println("A1 ");
-      display.setCursor(40, 8);
-      display.print(Corrected_Voltage_ADC1);
-
-      display.setCursor(0, 16);
-      display.setTextSize(1);
-      display.println("A2 ");
-      display.setCursor(40, 16);
-      display.print(Corrected_Voltage_ADC2);
-
-      display.setCursor(0, 24);
-      display.setTextSize(1);
-      display.println("A3 ");
-      display.setCursor(40, 24);
-      display.print(Corrected_Voltage_ADC3);
-
-      display.setCursor(0, 32);
-      display.setTextSize(1);
-      display.println("34 ");
-      display.setCursor(40, 32);
-      display.print(Corrected_Voltage_ADC_Pin_34);
-      display.display();
-      break;
-
-    case 5:
-
-      display.setCursor(0, 0);
-      display.setTextSize(1);
-      display.println("A0 ");
-      display.setCursor(40, 0);
-      display.print(Corrected_Voltage_ADC0);
-
-      display.setCursor(0, 8);
-      display.setTextSize(1);
-      display.println("A1 ");
-      display.setCursor(40, 8);
-      display.print(Corrected_Voltage_ADC1);
-
-      display.setCursor(0, 16);
-      display.setTextSize(1);
-      display.println("A2 ");
-      display.setCursor(40, 16);
-      display.print(Corrected_Voltage_ADC2);
-
-      display.setCursor(0, 24);
-      display.setTextSize(1);
-      display.println("A3 ");
-      display.setCursor(40, 24);
-      display.print(Corrected_Voltage_ADC3);
-
-      display.setCursor(0, 32);
-      display.setTextSize(1);
-      display.println("34 ");
-      display.setCursor(40, 32);
-      display.print(Corrected_Voltage_ADC_Pin_34);
-
-      display.setCursor(0, 40);
-      display.setTextSize(1);
-      display.println("35 ");
-      display.setCursor(40, 40);
-      display.print(Corrected_Voltage_ADC_Pin_35);
-      display.display();
-      break;
-
-    case 6:
-
-      display.setCursor(0, 0);
-      display.setTextSize(1);
-      display.println("A0 ");
-      display.setCursor(40, 0);
-      display.print(Corrected_Voltage_ADC0);
-
-      display.setCursor(0, 8);
-      display.setTextSize(1);
-      display.println("A1 ");
-      display.setCursor(40, 8);
-      display.print(Corrected_Voltage_ADC1);
-
-      display.setCursor(0, 16);
-      display.setTextSize(1);
-      display.println("A2 ");
-      display.setCursor(40, 16);
-      display.print(Corrected_Voltage_ADC2);
-
-      display.setCursor(0, 24);
-      display.setTextSize(1);
-      display.println("A3 ");
-      display.setCursor(40, 24);
-      display.print(Corrected_Voltage_ADC3);
-
-      display.setCursor(0, 32);
-      display.setTextSize(1);
-      display.println("34 ");
-      display.setCursor(40, 32);
-      display.print(Corrected_Voltage_ADC_Pin_34);
-
-      display.setCursor(0, 40);
-      display.setTextSize(1);
-      display.println("35 ");
-      display.setCursor(40, 40);
-      display.print(Corrected_Voltage_ADC_Pin_35);
-
-      display.setCursor(0, 48);
-      display.setTextSize(1);
-      display.println("32 ");
-      display.setCursor(40, 48);
-      display.print(Corrected_Voltage_ADC_Pin_32);
-      display.display();
-      break;
-
-    case 7:
-
-      display.setCursor(0, 0);
-      display.setTextSize(1);
-      display.println("A0 ");
-      display.setCursor(40, 0);
-      display.print(Corrected_Voltage_ADC0);
-
-      display.setCursor(0, 8);
-      display.setTextSize(1);
-      display.println("A1 ");
-      display.setCursor(40, 8);
-      display.print(Corrected_Voltage_ADC1);
-
-      display.setCursor(0, 16);
-      display.setTextSize(1);
-      display.println("A2 ");
-      display.setCursor(40, 16);
-      display.print(Corrected_Voltage_ADC2);
-
-      display.setCursor(0, 24);
-      display.setTextSize(1);
-      display.println("A3 ");
-      display.setCursor(40, 24);
-      display.print(Corrected_Voltage_ADC3);
-
-      display.setCursor(0, 32);
-      display.setTextSize(1);
-      display.println("34 ");
-      display.setCursor(40, 32);
-      display.print(Corrected_Voltage_ADC_Pin_34);
-
-      display.setCursor(0, 40);
-      display.setTextSize(1);
-      display.println("35 ");
-      display.setCursor(40, 40);
-      display.print(Corrected_Voltage_ADC_Pin_35);
-
-      display.setCursor(0, 48);
-      display.setTextSize(1);
-      display.println("32 ");
-      display.setCursor(40, 48);
-      display.print(Corrected_Voltage_ADC_Pin_32);
-
-      display.setCursor(0, 56);
-      display.setTextSize(1);
-      display.println("33 ");
-      display.setCursor(40, 56);
-      display.print(Corrected_Voltage_ADC_Pin_33);
-      display.display();
-      break;
-
-    case 8:
-
-      display.setCursor(0, 0);
-      display.setTextSize(1);
-      display.println("A0-A1 Current(mA)");
-      display.setCursor(0, 16);
-      display.setTextSize(2);
-      display.print(Current_ADC_0_1_High_Side);
-
-      display.setCursor(0, 34);
-      display.setTextSize(1);
-      display.println("A0-A1 Diff voltage(V)");
-      display.setCursor(0, 50);
-      display.setTextSize(2);
-      display.print(Voltage_Diff_ADC_0_1);
-      display.display();
-      break;
-
-    case 9:
-
-      display.setCursor(0, 0);
-      display.setTextSize(1);
-      display.println("A0-A1 Current(mA)");
-      display.setCursor(0, 8);
-      display.print(Current_ADC_0_1_High_Side);
-
-      display.setCursor(0, 16);
-      display.println("A0-A1 Diff voltage(V)");
-      display.setCursor(0, 24);
-      display.print(Voltage_Diff_ADC_0_1);
-
-      display.setCursor(0, 40);
-      display.println("A2");
-      display.setCursor(40, 40);
-      display.print(Corrected_Voltage_ADC2);
-
-      display.setCursor(0, 56);
-      display.println("A3");
-      display.setCursor(40, 56);
-      display.print(Corrected_Voltage_ADC3);
-      display.display();
-      break;
-
-    case 10:
-
-      display.setCursor(0, 0);
-      display.setTextSize(1);
-      display.println("A0-A1 Current(mA)");
-      display.setCursor(0, 8);
-      display.print(Current_ADC_0_1_High_Side);
-
-      display.setCursor(0, 16);
-      display.println("A0-A1 Diff voltage(V)");
-      display.setCursor(0, 24);
-      display.print(Voltage_Diff_ADC_0_1);
-
-      display.setCursor(0, 32);
-      display.println("A2-A3 Current(mA)");
-      display.setCursor(0, 40);
-      display.print(Current_ADC_2_3_High_Side);
-
-      display.setCursor(0, 48);
-      display.println("A2-A3 Diff voltage(V)");
-      display.setCursor(0, 56);
-      display.print(Voltage_Diff_ADC_2_3);
-      display.display();
-      break;
-
-    case 11:
-
-      display.setCursor(0, 0);
-      display.setTextSize(1);
-      display.println("A0-A1(mA)");
-      display.setCursor(70, 0);
-      display.print(Current_ADC_0_1_High_Side);
-
-      display.setCursor(0, 8);
-      display.println("A0-A1(V)");
-      display.setCursor(70, 8);
-      display.print(Voltage_Diff_ADC_0_1);
-
-      display.setCursor(0, 16);
-      display.println("A2-A3(mA)");
-      display.setCursor(70, 16);
-      display.print(Current_ADC_2_3_High_Side);
-
-      display.setCursor(0, 24);
-      display.println("A2-A3(V)");
-      display.setCursor(70, 24);
-      display.print(Voltage_Diff_ADC_2_3);
-
-      display.setCursor(0, 32);
-      display.setTextSize(1);
-      display.println("34 ");
-      display.setCursor(70, 32);
-      display.print(Corrected_Voltage_ADC_Pin_34);
-
-      display.setCursor(0, 40);
-      display.setTextSize(1);
-      display.println("35 ");
-      display.setCursor(70, 40);
-      display.print(Corrected_Voltage_ADC_Pin_35);
-
-      display.setCursor(0, 48);
-      display.setTextSize(1);
-      display.println("32 ");
-      display.setCursor(70, 48);
-      display.print(Corrected_Voltage_ADC_Pin_32);
-
-      display.setCursor(0, 56);
-      display.setTextSize(1);
-      display.println("33 ");
-      display.setCursor(70, 56);
-      display.print(Corrected_Voltage_ADC_Pin_33);
-      display.display();
-      break;
-
-    default:
-
-      display.setCursor(0, 0);
-      display.setTextSize(1);
-      display.println("A0 ");
-      display.setCursor(0, 17);
-      display.setTextSize(4);
-      display.print(Corrected_Voltage_ADC0);
-      display.display();
-      break;
-    }
+
+  // remove this first line if bug/overflow appears randomly
+  display.ssd1306_command(SSD1306_DISPLAYON);
+  display.clearDisplay();
+  display.setTextColor(WHITE);
+
+  switch (Number_Touching)
+  {
+  case 0:
+
+    display.setCursor(0, 0);
+    display.setTextSize(1);
+    display.println("A0 ");
+    display.setCursor(0, 17);
+    display.setTextSize(4);
+    display.print(Corrected_Voltage_ADC0);
+    display.display();
+
+    Data_Serial = String(String(Time) + "," + Corrected_Voltage_ADC0);
+    Data_wifi = String(String(Time - Time_Wifi_Zero) + "," + Corrected_Voltage_ADC0);
+
+    break;
+
+  case 1:
+
+    display.setCursor(0, 0);
+    display.setTextSize(1);
+    display.println("A0 ");
+    display.setCursor(0, 16);
+    display.setTextSize(2);
+    display.print(Corrected_Voltage_ADC0);
+
+    display.setCursor(0, 34);
+    display.setTextSize(1);
+    display.println("A1 ");
+    display.setCursor(0, 50);
+    display.setTextSize(2);
+    display.print(Corrected_Voltage_ADC1);
+    display.display();
+    break;
+
+  case 2:
+
+    display.setCursor(0, 0);
+    display.setTextSize(1);
+    display.println("A0 ");
+    display.setCursor(40, 0);
+    display.print(Corrected_Voltage_ADC0);
+
+    display.setCursor(0, 17);
+    display.setTextSize(1);
+    display.println("A1 ");
+    display.setCursor(40, 17);
+    display.print(Corrected_Voltage_ADC1);
+
+    display.setCursor(0, 34);
+    display.setTextSize(1);
+    display.println("A2 ");
+    display.setCursor(40, 34);
+    display.print(Corrected_Voltage_ADC2);
+    display.display();
+    break;
+
+  case 3:
+
+    display.setCursor(0, 0);
+    display.setTextSize(1);
+    display.println("A0 ");
+    display.setCursor(40, 0);
+    display.print(Corrected_Voltage_ADC0);
+
+    display.setCursor(0, 17);
+    display.setTextSize(1);
+    display.println("A1 ");
+    display.setCursor(40, 17);
+    display.print(Corrected_Voltage_ADC1);
+
+    display.setCursor(0, 34);
+    display.setTextSize(1);
+    display.println("A2 ");
+    display.setCursor(40, 34);
+    display.print(Corrected_Voltage_ADC2);
+
+    display.setCursor(0, 51);
+    display.setTextSize(1);
+    display.println("A3 ");
+    display.setCursor(40, 51);
+    display.print(Corrected_Voltage_ADC3);
+    display.display();
+    break;
+
+  case 4:
+
+    display.setCursor(0, 0);
+    display.setTextSize(1);
+    display.println("A0 ");
+    display.setCursor(40, 0);
+    display.print(Corrected_Voltage_ADC0);
+
+    display.setCursor(0, 8);
+    display.setTextSize(1);
+    display.println("A1 ");
+    display.setCursor(40, 8);
+    display.print(Corrected_Voltage_ADC1);
+
+    display.setCursor(0, 16);
+    display.setTextSize(1);
+    display.println("A2 ");
+    display.setCursor(40, 16);
+    display.print(Corrected_Voltage_ADC2);
+
+    display.setCursor(0, 24);
+    display.setTextSize(1);
+    display.println("A3 ");
+    display.setCursor(40, 24);
+    display.print(Corrected_Voltage_ADC3);
+
+    display.setCursor(0, 32);
+    display.setTextSize(1);
+    display.println("34 ");
+    display.setCursor(40, 32);
+    display.print(Corrected_Voltage_ADC_Pin_34);
+    display.display();
+    break;
+
+  case 5:
+
+    display.setCursor(0, 0);
+    display.setTextSize(1);
+    display.println("A0 ");
+    display.setCursor(40, 0);
+    display.print(Corrected_Voltage_ADC0);
+
+    display.setCursor(0, 8);
+    display.setTextSize(1);
+    display.println("A1 ");
+    display.setCursor(40, 8);
+    display.print(Corrected_Voltage_ADC1);
+
+    display.setCursor(0, 16);
+    display.setTextSize(1);
+    display.println("A2 ");
+    display.setCursor(40, 16);
+    display.print(Corrected_Voltage_ADC2);
+
+    display.setCursor(0, 24);
+    display.setTextSize(1);
+    display.println("A3 ");
+    display.setCursor(40, 24);
+    display.print(Corrected_Voltage_ADC3);
+
+    display.setCursor(0, 32);
+    display.setTextSize(1);
+    display.println("34 ");
+    display.setCursor(40, 32);
+    display.print(Corrected_Voltage_ADC_Pin_34);
+
+    display.setCursor(0, 40);
+    display.setTextSize(1);
+    display.println("35 ");
+    display.setCursor(40, 40);
+    display.print(Corrected_Voltage_ADC_Pin_35);
+    display.display();
+    break;
+
+  case 6:
+
+    display.setCursor(0, 0);
+    display.setTextSize(1);
+    display.println("A0 ");
+    display.setCursor(40, 0);
+    display.print(Corrected_Voltage_ADC0);
+
+    display.setCursor(0, 8);
+    display.setTextSize(1);
+    display.println("A1 ");
+    display.setCursor(40, 8);
+    display.print(Corrected_Voltage_ADC1);
+
+    display.setCursor(0, 16);
+    display.setTextSize(1);
+    display.println("A2 ");
+    display.setCursor(40, 16);
+    display.print(Corrected_Voltage_ADC2);
+
+    display.setCursor(0, 24);
+    display.setTextSize(1);
+    display.println("A3 ");
+    display.setCursor(40, 24);
+    display.print(Corrected_Voltage_ADC3);
+
+    display.setCursor(0, 32);
+    display.setTextSize(1);
+    display.println("34 ");
+    display.setCursor(40, 32);
+    display.print(Corrected_Voltage_ADC_Pin_34);
+
+    display.setCursor(0, 40);
+    display.setTextSize(1);
+    display.println("35 ");
+    display.setCursor(40, 40);
+    display.print(Corrected_Voltage_ADC_Pin_35);
+
+    display.setCursor(0, 48);
+    display.setTextSize(1);
+    display.println("32 ");
+    display.setCursor(40, 48);
+    display.print(Corrected_Voltage_ADC_Pin_32);
+    display.display();
+    break;
+
+  case 7:
+
+    display.setCursor(0, 0);
+    display.setTextSize(1);
+    display.println("A0 ");
+    display.setCursor(40, 0);
+    display.print(Corrected_Voltage_ADC0);
+
+    display.setCursor(0, 8);
+    display.setTextSize(1);
+    display.println("A1 ");
+    display.setCursor(40, 8);
+    display.print(Corrected_Voltage_ADC1);
+
+    display.setCursor(0, 16);
+    display.setTextSize(1);
+    display.println("A2 ");
+    display.setCursor(40, 16);
+    display.print(Corrected_Voltage_ADC2);
+
+    display.setCursor(0, 24);
+    display.setTextSize(1);
+    display.println("A3 ");
+    display.setCursor(40, 24);
+    display.print(Corrected_Voltage_ADC3);
+
+    display.setCursor(0, 32);
+    display.setTextSize(1);
+    display.println("34 ");
+    display.setCursor(40, 32);
+    display.print(Corrected_Voltage_ADC_Pin_34);
+
+    display.setCursor(0, 40);
+    display.setTextSize(1);
+    display.println("35 ");
+    display.setCursor(40, 40);
+    display.print(Corrected_Voltage_ADC_Pin_35);
+
+    display.setCursor(0, 48);
+    display.setTextSize(1);
+    display.println("32 ");
+    display.setCursor(40, 48);
+    display.print(Corrected_Voltage_ADC_Pin_32);
+
+    display.setCursor(0, 56);
+    display.setTextSize(1);
+    display.println("33 ");
+    display.setCursor(40, 56);
+    display.print(Corrected_Voltage_ADC_Pin_33);
+    display.display();
+    break;
+
+  case 8:
+
+    display.setCursor(0, 0);
+    display.setTextSize(1);
+    display.println("A0-A1 Current(mA)");
+    display.setCursor(0, 16);
+    display.setTextSize(2);
+    display.print(Current_ADC_0_1_High_Side);
+
+    display.setCursor(0, 34);
+    display.setTextSize(1);
+    display.println("A0-A1 Diff voltage(V)");
+    display.setCursor(0, 50);
+    display.setTextSize(2);
+    display.print(Voltage_Diff_ADC_0_1);
+    display.display();
+    break;
+
+  case 9:
+
+    display.setCursor(0, 0);
+    display.setTextSize(1);
+    display.println("A0-A1 Current(mA)");
+    display.setCursor(0, 8);
+    display.print(Current_ADC_0_1_High_Side);
+
+    display.setCursor(0, 16);
+    display.println("A0-A1 Diff voltage(V)");
+    display.setCursor(0, 24);
+    display.print(Voltage_Diff_ADC_0_1);
+
+    display.setCursor(0, 40);
+    display.println("A2");
+    display.setCursor(40, 40);
+    display.print(Corrected_Voltage_ADC2);
+
+    display.setCursor(0, 56);
+    display.println("A3");
+    display.setCursor(40, 56);
+    display.print(Corrected_Voltage_ADC3);
+    display.display();
+    break;
+
+  case 10:
+
+    display.setCursor(0, 0);
+    display.setTextSize(1);
+    display.println("A0-A1 Current(mA)");
+    display.setCursor(0, 8);
+    display.print(Current_ADC_0_1_High_Side);
+
+    display.setCursor(0, 16);
+    display.println("A0-A1 Diff voltage(V)");
+    display.setCursor(0, 24);
+    display.print(Voltage_Diff_ADC_0_1);
+
+    display.setCursor(0, 32);
+    display.println("A2-A3 Current(mA)");
+    display.setCursor(0, 40);
+    display.print(Current_ADC_2_3_High_Side);
+
+    display.setCursor(0, 48);
+    display.println("A2-A3 Diff voltage(V)");
+    display.setCursor(0, 56);
+    display.print(Voltage_Diff_ADC_2_3);
+    display.display();
+    break;
+
+  case 11:
+
+    display.setCursor(0, 0);
+    display.setTextSize(1);
+    display.println("A0-A1(mA)");
+    display.setCursor(70, 0);
+    display.print(Current_ADC_0_1_High_Side);
+
+    display.setCursor(0, 8);
+    display.println("A0-A1(V)");
+    display.setCursor(70, 8);
+    display.print(Voltage_Diff_ADC_0_1);
+
+    display.setCursor(0, 16);
+    display.println("A2-A3(mA)");
+    display.setCursor(70, 16);
+    display.print(Current_ADC_2_3_High_Side);
+
+    display.setCursor(0, 24);
+    display.println("A2-A3(V)");
+    display.setCursor(70, 24);
+    display.print(Voltage_Diff_ADC_2_3);
+
+    display.setCursor(0, 32);
+    display.setTextSize(1);
+    display.println("34 ");
+    display.setCursor(70, 32);
+    display.print(Corrected_Voltage_ADC_Pin_34);
+
+    display.setCursor(0, 40);
+    display.setTextSize(1);
+    display.println("35 ");
+    display.setCursor(70, 40);
+    display.print(Corrected_Voltage_ADC_Pin_35);
+
+    display.setCursor(0, 48);
+    display.setTextSize(1);
+    display.println("32 ");
+    display.setCursor(70, 48);
+    display.print(Corrected_Voltage_ADC_Pin_32);
+
+    display.setCursor(0, 56);
+    display.setTextSize(1);
+    display.println("33 ");
+    display.setCursor(70, 56);
+    display.print(Corrected_Voltage_ADC_Pin_33);
+    display.display();
+    break;
+
+  default:
+
+    display.setCursor(0, 0);
+    display.setTextSize(1);
+    display.println("A0 ");
+    display.setCursor(0, 17);
+    display.setTextSize(4);
+    display.print(Corrected_Voltage_ADC0);
+    display.display();
+    break;
+  }
 }
 
-void gotTouch()
+void Choose_Program_Display()
 {
-  if (millis() - sinceLastTouch < 500)
+  if (millis() - sinceLastTouch < 350)
     return;
   sinceLastTouch = millis();
-  Number_Touching++;
-  Serial.println(Number_Touching);
-  if (Number_Touching >= 12)
+
+  Time_from_Awake = millis();
+
+  if (Light_Sleep == true) // to only awake the ESP without doing anithing else
   {
-    Number_Touching = 0;
+    Light_Sleep = false;
+  }
+  else if (Light_Sleep == false)
+  {
+    Number_Touching++;
+//    Serial.println(Number_Touching);
+    if (Number_Touching >= 12)
+    {
+      Number_Touching = 0;
+    }
+  }
+}
+
+void Choose_WIFI()
+{
+  if (millis() - sinceLastTouch < 350)
+    return;
+  sinceLastTouch = millis();
+
+  Time_from_Awake = millis();
+
+  if (Light_Sleep == true) // to only awake the ESP without doing anithing else
+  {
+    Light_Sleep = false;
+  }
+
+  else if (Light_Sleep == false)
+  {
+    if (Touch_WIFI == false)
+    {
+      Touch_WIFI = true;
+ //     Serial.println("Wifi activated");
+    }
+    else if (Touch_WIFI == true)
+    {
+      Touch_WIFI = false;
+ //     Serial.println("Wifi stopped");
+    }
   }
 }
 
@@ -684,7 +725,11 @@ void setup(void)
       ; // Don't proceed, loop forever
   }
 
-  touchAttachInterrupt(T0, gotTouch, threshold);
+  touchAttachInterrupt(T0, Choose_Program_Display, threshold);
+  touchAttachInterrupt(T3, Choose_WIFI, threshold);
+  //touchAttachInterrupt(T3, Display_Program, threshold);
+
+  esp_sleep_enable_touchpad_wakeup();
 
   display.clearDisplay();
 
@@ -701,26 +746,15 @@ void setup(void)
   delay(1000);
 
   Time_from_Begin = millis();
+
+  Time_from_Begin = Time_from_Awake;
 }
 
 void loop(void)
 {
 
-
-  
-  WiFiClient client = server.available();
-
-  if(client)
+  if (Touch_WIFI == false)
   {
-
-    // Attention, Si perds la connection wifi, les temps ne seront plus corrects
-
-    if ((client) && Trigger_Time_Zero_For_Wifi == false)
-    {
-      Time_Wifi_Zero = millis();
-      Trigger_Time_Zero_For_Wifi = true;
-    }
-
     Compute_Voltage_from_ESP32();
     Compute_Voltage_from_ADS1115();
 
@@ -728,141 +762,51 @@ void loop(void)
 
     Display_OLED();
 
+    if (Time - Time_from_Awake > 20000)
+    {
+
+      display.ssd1306_command(SSD1306_DISPLAYOFF);
+      Light_Sleep = true;
+      delay(100);
+      esp_light_sleep_start();
+    }
+  }
+
+  else if (Touch_WIFI == true)
+  {
+    WiFiClient client = server.available();
+
+    if (client)
+    {
+      while (client.connected())
+      { // Attention, Si perds la connection wifi, les temps ne seront plus corrects
+
+        if ((client.connected()) && Trigger_Time_Zero_For_Wifi == false)
+        {
+          Time_Wifi_Zero = millis();
+          Trigger_Time_Zero_For_Wifi = true;
+        }
+
+        Compute_Voltage_from_ESP32();
+        Compute_Voltage_from_ADS1115();
+
+        Time = millis();
+
+        Display_OLED();
+      }
+    }
+    // if there is no client.connected
+    display.clearDisplay();
+    display.setTextSize(2);
+    display.setCursor(0, 0);
+    display.println("Waiting");
+    display.println("for");
+    display.println("client");
+    display.setTextSize(1);
+    display.setCursor(0, 56);
+    display.println("IP");
+    display.setCursor(30, 56);
+    display.println(local_IP);
+    display.display();
   }
 }
-// // GPIO33
-// if (Number_Touching == 0)
-// {
-//   display.setCursor(0, 0);
-//   display.println("A0 ");
-//   display.setCursor(40, 0);
-//   display.print(Corrected_Voltage_ADC0);
-//   display.setCursor(110, 0);
-//   display.print("V");
-// }
-
-// // GPIO32
-// display.setCursor(0, 17);
-// display.println("A1 ");
-// display.setCursor(40, 17);
-// display.print(Corrected_Voltage_ADC1);
-// display.setCursor(110, 17);
-// display.print("V");
-
-// // GPIO35
-// display.setCursor(0, 34);
-// display.println("32 ");
-// display.setCursor(40, 34);
-// display.print(Corrected_Voltage_ADC_Pin_32);
-// display.setCursor(110, 34);
-// display.print("V");
-
-// // GPIO34
-// display.setCursor(0, 51);
-// display.println("33 ");
-// display.setCursor(40, 51);
-// display.print(Corrected_Voltage_ADC_Pin_33);
-// display.setCursor(110, 51);
-// display.print("V");
-
-// display.display();
-//  delay(5000);
-
-// Keeping the other possibility to work with 4 current sensing channels on low-side
-
-// Current_ADC_0_Low_Side = (Corrected_Voltage_ADC0) / R_Shunt_1
-// Current_ADC_1_Low_Side = (Corrected_Voltage_ADC1) / R_Shunt_2
-// Current_ADC_2_Low_Side = (Corrected_Voltage_ADC2) / R_Shunt_3
-// Current_ADC_3_Low_Side = (Corrected_Voltage_ADC3) / R_Shunt_4
-
-// Voltage at the bridge : 10 channels
-
-// Serial.println("Voltage at Bridge ");
-// Serial.print(Voltage_Bridge_ADC0.average(), 6);
-// Serial.print(",");
-// Serial.print(Voltage_Bridge_ADC1.average(), 6);
-// Serial.print(",");
-// Serial.print(Voltage_Bridge_ADC2.average(), 6);
-// Serial.print(",");
-// Serial.print(Voltage_Bridge_ADC3.average(), 6);
-// Serial.print(",");
-// I decide to change the order here, to see all the high side first, and then behind resistor.
-// Serial.print(Voltage_Bridge_ADC_Pin_32.average(), 6);
-// Serial.print(",");
-// Serial.print(Voltage_Bridge_ADC_Pin_33.average(), 6);
-// Serial.print(",");
-// Serial.print(Voltage_Bridge_ADC_Pin_34.average(), 6);
-// Serial.print(",");
-// Serial.print(Voltage_Bridge_ADC_Pin_35.average(), 6);
-// Serial.print(",");
-// Serial.print(Voltage_Bridge_ADC_Pin_36.average(), 6);
-// Serial.print(",");
-// Serial.println(Voltage_Bridge_ADC_Pin_39.average(), 6);
-//Serial.print(",");
-
-// std of voltage bridge
-// Serial.println("Standard deviation of Voltage at Bridge: ");
-// Serial.print(Voltage_Bridge_ADC0.pop_stdev() * 1000, 6);
-// Serial.print(",");
-// Serial.print(Voltage_Bridge_ADC1.pop_stdev() * 1000, 6);
-// Serial.print(",");
-// Serial.print(Voltage_Bridge_ADC2.pop_stdev() * 1000, 6);
-// Serial.print(",");
-// Serial.print(Voltage_Bridge_ADC3.pop_stdev() * 1000, 6);
-// Serial.print(",");
-// Serial.print(Voltage_Bridge_ADC_Pin_32.pop_stdev() * 1000, 6);
-// Serial.print(",");
-// Serial.print(Voltage_Bridge_ADC_Pin_33.pop_stdev() * 1000, 6);
-// Serial.print(",");
-// Serial.print(Voltage_Bridge_ADC_Pin_34.pop_stdev() * 1000, 6);
-// Serial.print(",");
-// Serial.print(Voltage_Bridge_ADC_Pin_35.pop_stdev() * 1000, 6);
-// Serial.print(",");
-// Serial.print(Voltage_Bridge_ADC_Pin_36.pop_stdev() * 1000, 6);
-// Serial.print(",");
-// Serial.println(Voltage_Bridge_ADC_Pin_39.pop_stdev() * 1000, 6);
-
-// Search Voltage (corrected by approx factor 10 if R2=10*R1) allowing measurement
-// until approx 25V securely (security margin to 33V)
-
-// Serial.print(",");
-// Serial.print(Corrected_Voltage_ADC_Pin_34, 6);
-// Serial.print(",");
-// Serial.print(Corrected_Voltage_ADC_Pin_35, 6);
-// Serial.print(",");
-// Serial.print(Corrected_Voltage_ADC_Pin_36, 6);
-// Serial.print(",");
-// Serial.println(Corrected_Voltage_ADC_Pin_39, 6);
-// Serial.print(",");
-
-// Current computed  function of high side or low side
-// keep in mind that current maybe measured also with GPIO of ADS1115 but less accurately
-// only on high side and with a strong sample number to get an average allowing good approximation.
-
-// commented but in case of want to use more channel with low side sensing.
-
-// Serial.print(Current_ADC_0_Low_Side, 6);
-// Serial.print(",");
-// Serial.println(Current_ADC_1_Low_Side, 6);
-// Serial.print(",");
-// Serial.print(Current_ADC_2_Low_Side, 6);
-// Serial.print(",");
-// Serial.print(Current_ADC_3_Low_Side, 6);
-
-// Serial.println("Currents :");
-// Serial.print(Current_ADC_0_1_High_Side, 6);
-// Serial.print(",");
-// Serial.print(Current_ADC_2_3_High_Side, 6);
-// Serial.print(",");
-// Serial.println(Current_ADC_GPIO34_GPIO35_High_Side, 6);
-
-// Serial.println("Time : ");
-// Serial.print(millis() - Time_from_Begin);
-// Serial.print(",");
-// Serial.print(millis() - Time_For_Sample_Rate);
-// Serial.print(",");
-// Serial.print((Time_2 - Time_1) );
-// Serial.print(",");
-// Serial.print((Time_3 - Time_2));
-// Serial.print(",");
-// Serial.println((millis() - Time_3) );
