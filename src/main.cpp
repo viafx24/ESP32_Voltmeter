@@ -43,20 +43,36 @@ Adafruit_ADS1115 ads1115;
 // const uint16_t Number_Samples_ADC_ESP32_Second_Loop = 20;
 // const uint16_t Number_Samples_ADS1115 = 20;
 
-const uint16_t Number_Samples_ADC_ESP32 = 48;
-const uint16_t Number_Samples_ADC_ESP32_Second_Loop = 1;
-const uint16_t Number_Samples_ADS1115 = 1;
+//I comment const; add again if bugs
+uint16_t Number_Samples_ADC_ESP32 = 48;
+uint16_t Number_Samples_ADC_ESP32_Second_Loop = 1;
+uint16_t Number_Samples_ADS1115 = 1;
 
-//uint32_t R0 = 97700;
-uint32_t R1 = 97700;
-uint32_t R2 = 9960; //19980 ;// 9960;
-uint32_t R3 = 9960; //19980 ;// 9960;
-//uint32_t R3 = 98200;// 9960;
+uint32_t R_20k_ADS0 = 19.89 * 1000;
+uint32_t R_20k_ADS1 = 19.70 * 1000;
+uint32_t R_20k_ADS2 = 19.74 * 1000;
+uint32_t R_20k_ADS3 = 19.93 * 1000;
+
+uint32_t R_115k_ADS0 = 116.6 * 1000; // Sum= 136.55 // expected 136.49
+uint32_t R_115k_ADS1 = 116.7 * 1000; //Sum=136.45 // expected 136.45
+uint32_t R_115k_ADS2 = 116.3 * 1000; //Sum= 136.1 // expected 136.09
+uint32_t R_100k_ADS3 = 99.05 * 1000; //Sum=119.05 //expected:118.98// keep in mind that A3 is limited to 15V cause of 100K and not 115K
+
+uint32_t R_10k_SN = 9.87 * 1000; // for battery jauge measure
+uint32_t R_10k_34 = 10.03 * 1000;
+uint32_t R_10k_35 = 9.93 * 1000;
+uint32_t R_10k_32 = 10.02 * 1000;
+uint32_t R_10k_33 = 9.86 * 1000;
+
+uint32_t R_100k_34 = 98.3 * 1000;  // Sum=108.4 //expected 108.33
+uint32_t R_100k_35 = 97.95 * 1000; // Sum=107.9 //expected  107.88
+uint32_t R_100k_32 = 97.75 * 1000; // Sum=107.8 //expected 107.77
+uint32_t R_100k_33 = 97.75 * 1000; // Sum=107.65 //expected 107.61
 
 float R_Shunt_1 = 0.1;
 float R_Shunt_2 = 0.1;
-float R_Shunt_3 = 0.1;
-float R_Shunt_4 = 0.1;
+// float R_Shunt_3 = 0.1;
+// float R_Shunt_4 = 0.1;
 
 // other parameters
 
@@ -124,6 +140,7 @@ boolean Trigger_Time_Zero_For_Wifi = false;
 //parameter for capacititve touch
 uint8_t threshold = 50;
 int8_t Number_Touching = 0;
+int8_t Number_Touching_2 = 0; //for sample rate
 volatile unsigned long sinceLastTouch = 0;
 
 // parameter for retrieving result from SPIFF file
@@ -132,7 +149,6 @@ String Line;
 uint16_t Count;
 const uint16_t Size_Array = 4096;
 float MyADS1115array[Size_Array];
-
 
 void Compute_Voltage_from_ADS1115()
 {
@@ -149,10 +165,10 @@ void Compute_Voltage_from_ADS1115()
         Voltage_Bridge_ADC3.add(ads1115.computeVolts(ads1115.readADC_SingleEnded(3)));
     }
 
-    Corrected_Voltage_ADC0 = (Voltage_Bridge_ADC0.average() * (R1 + R2)) / R2;
-    Corrected_Voltage_ADC1 = (Voltage_Bridge_ADC1.average() * (R1 + R3)) / R3;
-    Corrected_Voltage_ADC2 = (Voltage_Bridge_ADC2.average() * (R1 + R2)) / R2;
-    Corrected_Voltage_ADC3 = (Voltage_Bridge_ADC3.average() * (R1 + R3)) / R3;
+    Corrected_Voltage_ADC0 = (Voltage_Bridge_ADC0.average() * (R_115k_ADS0 + R_20k_ADS0)) / R_20k_ADS0;
+    Corrected_Voltage_ADC1 = (Voltage_Bridge_ADC1.average() * (R_115k_ADS1 + R_20k_ADS1)) / R_20k_ADS1;
+    Corrected_Voltage_ADC2 = (Voltage_Bridge_ADC2.average() * (R_115k_ADS2 + R_20k_ADS2)) / R_20k_ADS2;
+    Corrected_Voltage_ADC3 = (Voltage_Bridge_ADC3.average() * (R_100k_ADS3 + R_20k_ADS3)) / R_20k_ADS3;
 
     // differential High side measure of current
 
@@ -202,12 +218,12 @@ void Compute_Voltage_from_ESP32()
         Voltage_Bridge_ADC_Pin_36.add(MyADS1115array[uint16_t(ADC_Pin_36.average())]);
     }
 
-    Corrected_Voltage_ADC_Pin_33 = (Voltage_Bridge_ADC_Pin_33.average() * (R1 + R3)) / R3;
-    Corrected_Voltage_ADC_Pin_32 = (Voltage_Bridge_ADC_Pin_32.average() * (R1 + R2)) / R2;
-    Corrected_Voltage_ADC_Pin_35 = (Voltage_Bridge_ADC_Pin_35.average() * (R1 + R3)) / R3;
-    Corrected_Voltage_ADC_Pin_34 = (Voltage_Bridge_ADC_Pin_34.average() * (R1 + R2)) / R2;
-    Corrected_Voltage_ADC_Pin_39 = (Voltage_Bridge_ADC_Pin_39.average() * (R1 + R3)) / R3;
-    Corrected_Voltage_ADC_Pin_36 = (Voltage_Bridge_ADC_Pin_36.average() * (R1 + R2)) / R2;
+    Corrected_Voltage_ADC_Pin_33 = (Voltage_Bridge_ADC_Pin_33.average() * (R_100k_33 + R_10k_33)) / R_10k_33;
+    Corrected_Voltage_ADC_Pin_32 = (Voltage_Bridge_ADC_Pin_32.average() * (R_100k_32 + R_10k_32)) / R_10k_32;
+    Corrected_Voltage_ADC_Pin_35 = (Voltage_Bridge_ADC_Pin_35.average() * (R_100k_35 + R_10k_35)) / R_10k_35;
+    Corrected_Voltage_ADC_Pin_34 = (Voltage_Bridge_ADC_Pin_34.average() * (R_100k_34 + R_10k_34)) / R_10k_34;
+    // Corrected_Voltage_ADC_Pin_39 = (Voltage_Bridge_ADC_Pin_39.average() * (R1 + R_10k_SN)) / R_10k_SN;
+    // Corrected_Voltage_ADC_Pin_36 = (Voltage_Bridge_ADC_Pin_36.average() * (R1 + R2)) / R2;
 }
 
 void Display_OLED()
@@ -252,8 +268,6 @@ void Display_OLED()
         display.print(Corrected_Voltage_ADC1);
         display.display();
 
-
-
         Data_wifi = String(String(Time) + "," + Corrected_Voltage_ADC0 + "," + Corrected_Voltage_ADC1);
         break;
 
@@ -278,8 +292,8 @@ void Display_OLED()
         display.print(Corrected_Voltage_ADC2);
         display.display();
 
-Data_wifi = String(String(Time) + "," + Corrected_Voltage_ADC0 + "," + Corrected_Voltage_ADC1 +
- "," + Corrected_Voltage_ADC2);
+        Data_wifi = String(String(Time) + "," + Corrected_Voltage_ADC0 + "," + Corrected_Voltage_ADC1 +
+                           "," + Corrected_Voltage_ADC2);
 
         break;
 
@@ -310,8 +324,8 @@ Data_wifi = String(String(Time) + "," + Corrected_Voltage_ADC0 + "," + Corrected
         display.print(Corrected_Voltage_ADC3);
         display.display();
 
-Data_wifi = String(String(Time) + "," + Corrected_Voltage_ADC0 + "," + Corrected_Voltage_ADC1 +
- "," + Corrected_Voltage_ADC2 + "," + Corrected_Voltage_ADC3 );
+        Data_wifi = String(String(Time) + "," + Corrected_Voltage_ADC0 + "," + Corrected_Voltage_ADC1 +
+                           "," + Corrected_Voltage_ADC2 + "," + Corrected_Voltage_ADC3);
 
         break;
 
@@ -348,9 +362,8 @@ Data_wifi = String(String(Time) + "," + Corrected_Voltage_ADC0 + "," + Corrected
         display.print(Corrected_Voltage_ADC_Pin_34);
         display.display();
 
-
-Data_wifi = String(String(Time) + "," + Corrected_Voltage_ADC0 + "," + Corrected_Voltage_ADC1 +
-"," +  Corrected_Voltage_ADC2 + "," +  Corrected_Voltage_ADC3 + "," + Corrected_Voltage_ADC_Pin_34);
+        Data_wifi = String(String(Time) + "," + Corrected_Voltage_ADC0 + "," + Corrected_Voltage_ADC1 +
+                           "," + Corrected_Voltage_ADC2 + "," + Corrected_Voltage_ADC3 + "," + Corrected_Voltage_ADC_Pin_34);
 
         break;
 
@@ -393,9 +406,9 @@ Data_wifi = String(String(Time) + "," + Corrected_Voltage_ADC0 + "," + Corrected
         display.print(Corrected_Voltage_ADC_Pin_35);
         display.display();
 
-Data_wifi = String(String(Time) + "," + Corrected_Voltage_ADC0 + "," + Corrected_Voltage_ADC1 + "," +
-"," +  Corrected_Voltage_ADC2 + "," + Corrected_Voltage_ADC3 + "," + Corrected_Voltage_ADC_Pin_34 +
- "," + Corrected_Voltage_ADC_Pin_35);
+        Data_wifi = String(String(Time) + "," + Corrected_Voltage_ADC0 + "," + Corrected_Voltage_ADC1 + "," +
+                           "," + Corrected_Voltage_ADC2 + "," + Corrected_Voltage_ADC3 + "," + Corrected_Voltage_ADC_Pin_34 +
+                           "," + Corrected_Voltage_ADC_Pin_35);
 
         break;
 
@@ -444,9 +457,9 @@ Data_wifi = String(String(Time) + "," + Corrected_Voltage_ADC0 + "," + Corrected
         display.print(Corrected_Voltage_ADC_Pin_32);
         display.display();
 
-Data_wifi = String(String(Time) + "," + Corrected_Voltage_ADC0 + "," + Corrected_Voltage_ADC1 +
-"," +  Corrected_Voltage_ADC2 + "," + Corrected_Voltage_ADC3 + "," + Corrected_Voltage_ADC_Pin_34 +
-"," +  Corrected_Voltage_ADC_Pin_35 + "," + Corrected_Voltage_ADC_Pin_32 );
+        Data_wifi = String(String(Time) + "," + Corrected_Voltage_ADC0 + "," + Corrected_Voltage_ADC1 +
+                           "," + Corrected_Voltage_ADC2 + "," + Corrected_Voltage_ADC3 + "," + Corrected_Voltage_ADC_Pin_34 +
+                           "," + Corrected_Voltage_ADC_Pin_35 + "," + Corrected_Voltage_ADC_Pin_32);
 
         break;
 
@@ -501,9 +514,9 @@ Data_wifi = String(String(Time) + "," + Corrected_Voltage_ADC0 + "," + Corrected
         display.print(Corrected_Voltage_ADC_Pin_33);
         display.display();
 
-Data_wifi = String(String(Time) + "," + Corrected_Voltage_ADC0 + "," + Corrected_Voltage_ADC1 +
-"," +  Corrected_Voltage_ADC2 + "," + Corrected_Voltage_ADC3 + "," + Corrected_Voltage_ADC_Pin_34 + 
-"," + Corrected_Voltage_ADC_Pin_35 + "," + Corrected_Voltage_ADC_Pin_32 + "," + Corrected_Voltage_ADC_Pin_33);
+        Data_wifi = String(String(Time) + "," + Corrected_Voltage_ADC0 + "," + Corrected_Voltage_ADC1 +
+                           "," + Corrected_Voltage_ADC2 + "," + Corrected_Voltage_ADC3 + "," + Corrected_Voltage_ADC_Pin_34 +
+                           "," + Corrected_Voltage_ADC_Pin_35 + "," + Corrected_Voltage_ADC_Pin_32 + "," + Corrected_Voltage_ADC_Pin_33);
 
         break;
 
@@ -524,7 +537,7 @@ Data_wifi = String(String(Time) + "," + Corrected_Voltage_ADC0 + "," + Corrected
         display.print(Voltage_Diff_ADC_0_1);
         display.display();
 
-Data_wifi = String(String(Time) + "," + Current_ADC_0_1_High_Side + "," + Voltage_Diff_ADC_0_1 );
+        Data_wifi = String(String(Time) + "," + Current_ADC_0_1_High_Side + "," + Voltage_Diff_ADC_0_1);
 
         break;
 
@@ -552,9 +565,8 @@ Data_wifi = String(String(Time) + "," + Current_ADC_0_1_High_Side + "," + Voltag
         display.print(Corrected_Voltage_ADC3);
         display.display();
 
-
-Data_wifi = String(String(Time) + "," + Current_ADC_0_1_High_Side + "," + Voltage_Diff_ADC_0_1 + "," +
-"," +  Corrected_Voltage_ADC2 + "," + Corrected_Voltage_ADC3);
+        Data_wifi = String(String(Time) + "," + Current_ADC_0_1_High_Side + "," + Voltage_Diff_ADC_0_1 + "," +
+                           "," + Corrected_Voltage_ADC2 + "," + Corrected_Voltage_ADC3);
 
         break;
 
@@ -582,9 +594,8 @@ Data_wifi = String(String(Time) + "," + Current_ADC_0_1_High_Side + "," + Voltag
         display.print(Voltage_Diff_ADC_2_3);
         display.display();
 
-Data_wifi = String(String(Time) + "," + Current_ADC_0_1_High_Side + "," + Voltage_Diff_ADC_0_1 +
-"," +  Current_ADC_2_3_High_Side + "," + Voltage_Diff_ADC_2_3);
-
+        Data_wifi = String(String(Time) + "," + Current_ADC_0_1_High_Side + "," + Voltage_Diff_ADC_0_1 +
+                           "," + Current_ADC_2_3_High_Side + "," + Voltage_Diff_ADC_2_3);
 
         break;
 
@@ -636,10 +647,9 @@ Data_wifi = String(String(Time) + "," + Current_ADC_0_1_High_Side + "," + Voltag
         display.print(Corrected_Voltage_ADC_Pin_33);
         display.display();
 
-Data_wifi = String(String(Time) + "," + Current_ADC_0_1_High_Side + "," + Voltage_Diff_ADC_0_1 +
-"," +  Current_ADC_2_3_High_Side + "," + Voltage_Diff_ADC_2_3 + "," + Corrected_Voltage_ADC_Pin_34 +
-"," +  Corrected_Voltage_ADC_Pin_35 + "," + Corrected_Voltage_ADC_Pin_32 + "," + Corrected_Voltage_ADC_Pin_33);
-
+        Data_wifi = String(String(Time) + "," + Current_ADC_0_1_High_Side + "," + Voltage_Diff_ADC_0_1 +
+                           "," + Current_ADC_2_3_High_Side + "," + Voltage_Diff_ADC_2_3 + "," + Corrected_Voltage_ADC_Pin_34 +
+                           "," + Corrected_Voltage_ADC_Pin_35 + "," + Corrected_Voltage_ADC_Pin_32 + "," + Corrected_Voltage_ADC_Pin_33);
 
         break;
 
@@ -675,11 +685,10 @@ void Choose_Program_Display_Next()
     else if (Light_Sleep == false)
     {
         Number_Touching++;
-        
+
         if (Number_Touching > 11)
         {
             Number_Touching = 0;
-            
         }
 
         Serial.println(Number_Touching);
@@ -695,7 +704,6 @@ void Choose_Program_Display_Previous()
     Time_from_Awake = millis();
     //Serial.println(Time_from_Awake);
 
-
     if (Light_Sleep == true) // to only awake the ESP without doing anithing else
     {
         Light_Sleep = false;
@@ -703,8 +711,7 @@ void Choose_Program_Display_Previous()
     else if (Light_Sleep == false)
     {
         Number_Touching--;
-        
-        
+
         if (Number_Touching < 0)
         {
             Number_Touching = 11;
@@ -742,6 +749,81 @@ void Choose_WIFI()
             //     Serial.println("Wifi stopped");
         }
     }
+}
+
+void Change_Sample_Rate()
+{
+    if (millis() - sinceLastTouch < 500)
+        return;
+    sinceLastTouch = millis();
+
+    Time_from_Awake = millis();
+    //Serial.println(Time_from_Awake);
+
+    if (Light_Sleep == true) // to only awake the ESP without doing anithing else
+    {
+        Light_Sleep = false;
+    }
+    else if (Light_Sleep == false)
+    {
+
+        Number_Touching_2++;
+
+        if (Number_Touching_2 >= 7)
+        {
+            Number_Touching_2 = 0;
+           
+        }
+
+        Serial.println(Number_Touching_2);
+
+        switch (Number_Touching_2)
+        {
+        case 0:
+            Number_Samples_ADC_ESP32_Second_Loop = 1;
+            Number_Samples_ADS1115 = 1;
+
+            break;
+
+        case 1:
+
+            Number_Samples_ADC_ESP32_Second_Loop = 1;
+            Number_Samples_ADS1115 = 5;
+
+            break;
+
+        case 2:
+
+            Number_Samples_ADC_ESP32_Second_Loop = 1;
+            Number_Samples_ADS1115 = 10;
+
+            break;
+
+        case 3:
+
+            Number_Samples_ADC_ESP32_Second_Loop = 1;
+            Number_Samples_ADS1115 = 20;
+
+            break;
+
+        case 4:
+            Number_Samples_ADC_ESP32_Second_Loop = 1;
+            Number_Samples_ADS1115 = 40;
+
+            break;
+
+        case 5:
+
+            Number_Samples_ADC_ESP32_Second_Loop = 20;
+            Number_Samples_ADS1115 = 20;
+            break;
+
+        case 6:
+
+            Number_Samples_ADC_ESP32_Second_Loop = 40;
+            Number_Samples_ADS1115 = 40;
+        }
+     }
 }
 
 void setup(void)
@@ -807,6 +889,7 @@ void setup(void)
     }
 
     touchAttachInterrupt(T0, Choose_WIFI, threshold);
+    touchAttachInterrupt(T6, Change_Sample_Rate, threshold);
     touchAttachInterrupt(T2, Choose_Program_Display_Next, threshold);
     touchAttachInterrupt(T3, Choose_Program_Display_Previous, threshold);
 
@@ -830,7 +913,7 @@ void setup(void)
 
     Time_from_Awake = Time_from_Begin;
 
-    Number_Touching=0;// looks to set at 1 automatically thus reset to zero at the end of setup
+    Number_Touching = 0; // looks to set at 1 automatically thus reset to zero at the end of setup
     Serial.println(Number_Touching);
 }
 
@@ -845,8 +928,7 @@ void loop(void)
         Time = millis();
         Display_OLED();
 
-        Diff_Time= Time - Time_from_Awake; // Diff_Time need to be able to be negative thus signed
-    
+        Diff_Time = Time - Time_from_Awake; // Diff_Time need to be able to be negative thus signed
 
         if (Diff_Time > 20000)
         {
@@ -880,7 +962,7 @@ void loop(void)
                 Compute_Voltage_from_ESP32();
                 Compute_Voltage_from_ADS1115();
 
-                Time = millis()-Time_Wifi_Zero;
+                Time = millis() - Time_Wifi_Zero;
 
                 Display_OLED();
 
