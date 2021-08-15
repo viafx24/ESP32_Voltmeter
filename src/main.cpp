@@ -21,7 +21,7 @@ IPAddress subnet(255, 255, 255, 0);
 String Data_wifi;
 String Data_Serial;
 
-boolean Touch_WIFI = false;
+volatile volboolean Touch_WIFI = false;
 boolean Light_Sleep = false;
 
 WiFiServer server(80);
@@ -128,6 +128,7 @@ float Current_ADC_GPIO34_GPIO35_High_Side;
 unsigned long Time_from_Begin;
 unsigned long Time_from_Awake;
 unsigned long Time_Wifi_Zero;
+unsigned long Time_To_Sleep = 20000 ; // 2 minutes before entering sleeping mode
 long Diff_Time;
 unsigned long Time;
 boolean Trigger_Time_Zero_For_Wifi = false;
@@ -188,7 +189,7 @@ void Compute_Voltage_from_ESP32()
     Voltage_Bridge_ADC_Pin_35.clear();
     Voltage_Bridge_ADC_Pin_34.clear();
     Voltage_Bridge_ADC_Pin_39.clear();
-    Voltage_Bridge_ADC_Pin_36.clear();
+    //   Voltage_Bridge_ADC_Pin_36.clear();
 
     for (uint16_t k = 0; k < Number_Samples_ADC_ESP32_Second_Loop; k++) // 32 à la base semblait suffisant.
     {
@@ -198,7 +199,7 @@ void Compute_Voltage_from_ESP32()
         ADC_Pin_35.clear();
         ADC_Pin_34.clear();
         ADC_Pin_39.clear();
-        ADC_Pin_36.clear();
+        //  ADC_Pin_36.clear();
 
         for (uint16_t j = 0; j < Number_Samples_ADC_ESP32; j++) // 32 à la base semblait suffisant.
         {
@@ -207,7 +208,7 @@ void Compute_Voltage_from_ESP32()
             ADC_Pin_35.add(analogRead(Pin_35));
             ADC_Pin_34.add(analogRead(Pin_34));
             ADC_Pin_39.add(analogRead(Pin_39));
-            ADC_Pin_36.add(analogRead(Pin_36));
+            //    ADC_Pin_36.add(analogRead(Pin_36));
         }
 
         Voltage_Bridge_ADC_Pin_33.add(MyADS1115array[uint16_t(ADC_Pin_33.average())]);
@@ -215,14 +216,14 @@ void Compute_Voltage_from_ESP32()
         Voltage_Bridge_ADC_Pin_35.add(MyADS1115array[uint16_t(ADC_Pin_35.average())]);
         Voltage_Bridge_ADC_Pin_34.add(MyADS1115array[uint16_t(ADC_Pin_34.average())]);
         Voltage_Bridge_ADC_Pin_39.add(MyADS1115array[uint16_t(ADC_Pin_39.average())]);
-        Voltage_Bridge_ADC_Pin_36.add(MyADS1115array[uint16_t(ADC_Pin_36.average())]);
+        //  Voltage_Bridge_ADC_Pin_36.add(MyADS1115array[uint16_t(ADC_Pin_36.average())]);
     }
 
     Corrected_Voltage_ADC_Pin_33 = (Voltage_Bridge_ADC_Pin_33.average() * (R_100k_33 + R_10k_33)) / R_10k_33;
     Corrected_Voltage_ADC_Pin_32 = (Voltage_Bridge_ADC_Pin_32.average() * (R_100k_32 + R_10k_32)) / R_10k_32;
     Corrected_Voltage_ADC_Pin_35 = (Voltage_Bridge_ADC_Pin_35.average() * (R_100k_35 + R_10k_35)) / R_10k_35;
     Corrected_Voltage_ADC_Pin_34 = (Voltage_Bridge_ADC_Pin_34.average() * (R_100k_34 + R_10k_34)) / R_10k_34;
-    // Corrected_Voltage_ADC_Pin_39 = (Voltage_Bridge_ADC_Pin_39.average() * (R1 + R_10k_SN)) / R_10k_SN;
+    Corrected_Voltage_ADC_Pin_39 = (Voltage_Bridge_ADC_Pin_39.average() * (98000 + R_10k_SN)) / R_10k_SN; // R_100k not measure yet
     // Corrected_Voltage_ADC_Pin_36 = (Voltage_Bridge_ADC_Pin_36.average() * (R1 + R2)) / R2;
 }
 
@@ -243,11 +244,14 @@ void Display_OLED()
         display.println("A0 ");
 
         display.setCursor(80, 0);
-        if (Touch_WIFI == true)
-            display.println("wifi");
-
-        display.setCursor(110, 0);
         display.println(Number_Touching_2);
+
+        display.setCursor(92, 0);
+        if (Touch_WIFI == true)
+            display.println("w");
+
+        display.setCursor(102, 0);
+        display.println(Corrected_Voltage_ADC_Pin_39);
 
         display.setCursor(0, 17);
         display.setTextSize(4);
@@ -264,6 +268,18 @@ void Display_OLED()
         display.setCursor(0, 0);
         display.setTextSize(1);
         display.println("A0 ");
+
+        display.setCursor(80, 0);
+        display.println(Number_Touching_2);
+
+        display.setCursor(92, 0);
+        if (Touch_WIFI == true)
+            display.println("w");
+
+        display.setCursor(102, 0);
+        display.println(Corrected_Voltage_ADC_Pin_39);
+
+
         display.setCursor(0, 16);
         display.setTextSize(2);
         display.print(Corrected_Voltage_ADC0);
@@ -284,6 +300,19 @@ void Display_OLED()
         display.setCursor(0, 0);
         display.setTextSize(1);
         display.println("A0 ");
+
+        display.setCursor(80, 0);
+        display.println(Number_Touching_2);
+
+        display.setCursor(92, 0);
+        if (Touch_WIFI == true)
+            display.println("w");
+
+        display.setCursor(102, 0);
+        display.println(Corrected_Voltage_ADC_Pin_39);
+
+
+
         display.setCursor(40, 0);
         display.print(Corrected_Voltage_ADC0);
 
@@ -310,6 +339,18 @@ void Display_OLED()
         display.setCursor(0, 0);
         display.setTextSize(1);
         display.println("A0 ");
+
+        display.setCursor(80, 0);
+        display.println(Number_Touching_2);
+
+        display.setCursor(92, 0);
+        if (Touch_WIFI == true)
+            display.println("w");
+
+        display.setCursor(102, 0);
+        display.println(Corrected_Voltage_ADC_Pin_39);
+
+
         display.setCursor(40, 0);
         display.print(Corrected_Voltage_ADC0);
 
@@ -342,6 +383,17 @@ void Display_OLED()
         display.setCursor(0, 0);
         display.setTextSize(1);
         display.println("A0 ");
+
+        display.setCursor(80, 0);
+        display.println(Number_Touching_2);
+
+        display.setCursor(92, 0);
+        if (Touch_WIFI == true)
+            display.println("w");
+
+        display.setCursor(102, 0);
+        display.println(Corrected_Voltage_ADC_Pin_39);
+
         display.setCursor(40, 0);
         display.print(Corrected_Voltage_ADC0);
 
@@ -380,6 +432,18 @@ void Display_OLED()
         display.setCursor(0, 0);
         display.setTextSize(1);
         display.println("A0 ");
+
+        display.setCursor(80, 0);
+        display.println(Number_Touching_2);
+
+        display.setCursor(92, 0);
+        if (Touch_WIFI == true)
+            display.println("w");
+
+        display.setCursor(102, 0);
+        display.println(Corrected_Voltage_ADC_Pin_39);
+
+
         display.setCursor(40, 0);
         display.print(Corrected_Voltage_ADC0);
 
@@ -425,6 +489,19 @@ void Display_OLED()
         display.setCursor(0, 0);
         display.setTextSize(1);
         display.println("A0 ");
+
+        display.setCursor(80, 0);
+        display.println(Number_Touching_2);
+
+        display.setCursor(92, 0);
+        if (Touch_WIFI == true)
+            display.println("w");
+
+        display.setCursor(102, 0);
+        display.println(Corrected_Voltage_ADC_Pin_39);
+
+
+
         display.setCursor(40, 0);
         display.print(Corrected_Voltage_ADC0);
 
@@ -476,6 +553,17 @@ void Display_OLED()
         display.setCursor(0, 0);
         display.setTextSize(1);
         display.println("A0 ");
+
+        display.setCursor(80, 0);
+        display.println(Number_Touching_2);
+
+        display.setCursor(92, 0);
+        if (Touch_WIFI == true)
+            display.println("w");
+
+        display.setCursor(102, 0);
+        display.println(Corrected_Voltage_ADC_Pin_39);
+
         display.setCursor(40, 0);
         display.print(Corrected_Voltage_ADC0);
 
@@ -532,14 +620,25 @@ void Display_OLED()
 
         display.setCursor(0, 0);
         display.setTextSize(1);
-        display.println("A0-A1 Current(mA)");
+        display.println("A0-A1(mA)");
+
+        display.setCursor(80, 0);
+        display.println(Number_Touching_2);
+
+        display.setCursor(92, 0);
+        if (Touch_WIFI == true)
+            display.println("w");
+
+        display.setCursor(102, 0);
+        display.println(Corrected_Voltage_ADC_Pin_39);
+
         display.setCursor(0, 16);
         display.setTextSize(2);
         display.print(Current_ADC_0_1_High_Side);
 
         display.setCursor(0, 34);
         display.setTextSize(1);
-        display.println("A0-A1 Diff voltage(V)");
+        display.println("A0-A1(V)");
         display.setCursor(0, 50);
         display.setTextSize(2);
         display.print(Voltage_Diff_ADC_0_1);
@@ -553,12 +652,24 @@ void Display_OLED()
 
         display.setCursor(0, 0);
         display.setTextSize(1);
-        display.println("A0-A1 Current(mA)");
+        display.println("A0-A1(mA)");
+
+        display.setCursor(80, 0);
+        display.println(Number_Touching_2);
+
+        display.setCursor(92, 0);
+        if (Touch_WIFI == true)
+            display.println("w");
+
+        display.setCursor(102, 0);
+        display.println(Corrected_Voltage_ADC_Pin_39);
+
+
         display.setCursor(0, 8);
         display.print(Current_ADC_0_1_High_Side);
 
         display.setCursor(0, 16);
-        display.println("A0-A1 Diff voltage(V)");
+        display.println("A0-A1(V)");
         display.setCursor(0, 24);
         display.print(Voltage_Diff_ADC_0_1);
 
@@ -582,22 +693,34 @@ void Display_OLED()
 
         display.setCursor(0, 0);
         display.setTextSize(1);
-        display.println("A0-A1 Current(mA)");
+        display.println("A0-A1(mA)");
+
+        display.setCursor(80, 0);
+        display.println(Number_Touching_2);
+
+        display.setCursor(92, 0);
+        if (Touch_WIFI == true)
+            display.println("w");
+
+        display.setCursor(102, 0);
+        display.println(Corrected_Voltage_ADC_Pin_39);
+
+
         display.setCursor(0, 8);
         display.print(Current_ADC_0_1_High_Side);
 
         display.setCursor(0, 16);
-        display.println("A0-A1 Diff voltage(V)");
+        display.println("A0-A1(V)");
         display.setCursor(0, 24);
         display.print(Voltage_Diff_ADC_0_1);
 
         display.setCursor(0, 32);
-        display.println("A2-A3 Current(mA)");
+        display.println("A2-A3(mA)");
         display.setCursor(0, 40);
         display.print(Current_ADC_2_3_High_Side);
 
         display.setCursor(0, 48);
-        display.println("A2-A3 Diff voltage(V)");
+        display.println("A2-A3(V)");
         display.setCursor(0, 56);
         display.print(Voltage_Diff_ADC_2_3);
         display.display();
@@ -612,46 +735,57 @@ void Display_OLED()
         display.setCursor(0, 0);
         display.setTextSize(1);
         display.println("A0-A1(mA)");
-        display.setCursor(70, 0);
+        display.setCursor(60, 0);
         display.print(Current_ADC_0_1_High_Side);
+
+        display.setCursor(102, 0);
+        display.println(Number_Touching_2);
+
+        display.setCursor(114, 0);
+        if (Touch_WIFI == true)
+            display.println("w");
+
 
         display.setCursor(0, 8);
         display.println("A0-A1(V)");
-        display.setCursor(70, 8);
+        display.setCursor(60, 8);
         display.print(Voltage_Diff_ADC_0_1);
+
+        display.setCursor(102, 8);
+        display.println(Corrected_Voltage_ADC_Pin_39);
 
         display.setCursor(0, 16);
         display.println("A2-A3(mA)");
-        display.setCursor(70, 16);
+        display.setCursor(60, 16);
         display.print(Current_ADC_2_3_High_Side);
 
         display.setCursor(0, 24);
         display.println("A2-A3(V)");
-        display.setCursor(70, 24);
+        display.setCursor(60, 24);
         display.print(Voltage_Diff_ADC_2_3);
 
         display.setCursor(0, 32);
         display.setTextSize(1);
         display.println("34 ");
-        display.setCursor(70, 32);
+        display.setCursor(60, 32);
         display.print(Corrected_Voltage_ADC_Pin_34);
 
         display.setCursor(0, 40);
         display.setTextSize(1);
         display.println("35 ");
-        display.setCursor(70, 40);
+        display.setCursor(60, 40);
         display.print(Corrected_Voltage_ADC_Pin_35);
 
         display.setCursor(0, 48);
         display.setTextSize(1);
         display.println("32 ");
-        display.setCursor(70, 48);
+        display.setCursor(60, 48);
         display.print(Corrected_Voltage_ADC_Pin_32);
 
         display.setCursor(0, 56);
         display.setTextSize(1);
         display.println("33 ");
-        display.setCursor(70, 56);
+        display.setCursor(60, 56);
         display.print(Corrected_Voltage_ADC_Pin_33);
         display.display();
 
@@ -666,6 +800,18 @@ void Display_OLED()
         display.setCursor(0, 0);
         display.setTextSize(1);
         display.println("A0 ");
+
+        display.setCursor(80, 0);
+        display.println(Number_Touching_2);
+
+        display.setCursor(92, 0);
+        if (Touch_WIFI == true)
+            display.println("w");
+
+        display.setCursor(102, 0);
+        display.println(Corrected_Voltage_ADC_Pin_39);
+
+
         display.setCursor(0, 17);
         display.setTextSize(4);
         display.print(Corrected_Voltage_ADC0);
@@ -700,17 +846,21 @@ void Choose_Program_Display_Next()
         }
 
         Serial.println(Number_Touching);
+        Serial.println("Next");
     }
 }
 
 void Choose_Program_Display_Previous()
 {
+    
     if (millis() - sinceLastTouch < 500)
         return;
     sinceLastTouch = millis();
 
     Time_from_Awake = millis();
     //Serial.println(Time_from_Awake);
+
+    Serial.println(Number_Touching);
 
     if (Light_Sleep == true) // to only awake the ESP without doing anithing else
     {
@@ -720,12 +870,15 @@ void Choose_Program_Display_Previous()
     {
         Number_Touching--;
 
+        Serial.println(Number_Touching);
+
         if (Number_Touching < 0)
         {
             Number_Touching = 11;
         }
 
         Serial.println(Number_Touching);
+        Serial.println("Previous");
     }
 }
 
@@ -920,6 +1073,10 @@ void setup(void)
 
     Time_from_Awake = Time_from_Begin;
 
+// some problems with capa touch thus reinit here the variable
+    Touch_WIFI = false;
+    Light_Sleep = false;
+
     Number_Touching = 0; // looks to set at 1 automatically thus reset to zero at the end of setup
     Serial.println(Number_Touching);
 }
@@ -937,7 +1094,7 @@ void loop(void)
 
         Diff_Time = Time - Time_from_Awake; // Diff_Time need to be able to be negative thus signed
 
-        if (Diff_Time > 20000)
+        if (Diff_Time > 120000)
         {
             display.clearDisplay();
             display.setTextSize(2);
