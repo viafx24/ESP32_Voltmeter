@@ -20,6 +20,7 @@ IPAddress subnet(255, 255, 255, 0);
 
 String Data_wifi;
 String Data_Serial;
+uint8_t Number_Decimal=5;
 
 volatile boolean Touch_WIFI = false;
 volatile boolean Light_Sleep = false;
@@ -47,6 +48,8 @@ Adafruit_ADS1115 ads1115;
 uint16_t Number_Samples_ADC_ESP32 = 48;
 uint16_t Number_Samples_ADC_ESP32_Second_Loop = 1;
 uint16_t Number_Samples_ADS1115 = 1;
+
+
 
 uint32_t R_20k_ADS0 = 19.89 * 1000;
 uint32_t R_20k_ADS1 = 19.70 * 1000;
@@ -263,7 +266,7 @@ void Display_OLED()
         display.display();
 
         //Data_Serial = String(String(Time) + "," + Corrected_Voltage_ADC0);
-        Data_wifi = String(String(0) + "," + String(Time) + "," + Corrected_Voltage_ADC0);
+        Data_wifi = String(String(0) + "," + String(Time) + "," + String(Corrected_Voltage_ADC0,Number_Decimal));
 
         break;
 
@@ -295,7 +298,7 @@ void Display_OLED()
         display.print(Corrected_Voltage_ADC1);
         display.display();
 
-        Data_wifi = String(String(1) + "," + String(Time) + "," + Corrected_Voltage_ADC0 + "," + Corrected_Voltage_ADC1);
+        Data_wifi = String(String(1) + "," + String(Time) + "," + String(Corrected_Voltage_ADC0,Number_Decimal) + "," + String(Corrected_Voltage_ADC1,Number_Decimal));
         break;
 
     case 2:
@@ -330,8 +333,8 @@ void Display_OLED()
         display.print(Corrected_Voltage_ADC2);
         display.display();
 
-        Data_wifi = String(String(2) + "," + String(Time) + "," + Corrected_Voltage_ADC0 + "," + Corrected_Voltage_ADC1 +
-                           "," + Corrected_Voltage_ADC2);
+        Data_wifi = String(String(2) + "," + String(Time) + "," + String(Corrected_Voltage_ADC0,Number_Decimal) + "," + String(Corrected_Voltage_ADC1,Number_Decimal) +
+                           "," + String(Corrected_Voltage_ADC2,Number_Decimal));
 
         break;
 
@@ -373,8 +376,10 @@ void Display_OLED()
         display.print(Corrected_Voltage_ADC3);
         display.display();
 
-        Data_wifi = String(String(3) + "," + String(Time) + "," + Corrected_Voltage_ADC0 + "," + Corrected_Voltage_ADC1 +
-                           "," + Corrected_Voltage_ADC2 + "," + Corrected_Voltage_ADC3);
+        Data_wifi = String(String(3) + "," + String(Time) + "," + String(Corrected_Voltage_ADC0,Number_Decimal) + "," + String(Corrected_Voltage_ADC1,Number_Decimal) +
+                           "," + String(Corrected_Voltage_ADC2,Number_Decimal) + "," + String(Corrected_Voltage_ADC3,Number_Decimal));
+
+
 
         break;
 
@@ -422,8 +427,11 @@ void Display_OLED()
         display.print(Corrected_Voltage_ADC_Pin_34);
         display.display();
 
-        Data_wifi = String(String(4) + "," + String(Time) + "," + Corrected_Voltage_ADC0 + "," + Corrected_Voltage_ADC1 +
-                           "," + Corrected_Voltage_ADC2 + "," + Corrected_Voltage_ADC3 + "," + Corrected_Voltage_ADC_Pin_34);
+        Data_wifi = String(String(4) + "," + String(Time) + "," + String(Corrected_Voltage_ADC0,Number_Decimal) + "," + String(Corrected_Voltage_ADC1,Number_Decimal) +
+                           "," + String(Corrected_Voltage_ADC2,Number_Decimal) + "," + String(Corrected_Voltage_ADC3,Number_Decimal) + "," + String(Corrected_Voltage_ADC_Pin_34,Number_Decimal));
+
+
+
 
         break;
 
@@ -477,9 +485,12 @@ void Display_OLED()
         display.print(Corrected_Voltage_ADC_Pin_35);
         display.display();
 
-        Data_wifi = String(String(5) + "," + String(Time) + "," + Corrected_Voltage_ADC0 + "," + Corrected_Voltage_ADC1 + "," +
-                           "," + Corrected_Voltage_ADC2 + "," + Corrected_Voltage_ADC3 + "," + Corrected_Voltage_ADC_Pin_34 +
-                           "," + Corrected_Voltage_ADC_Pin_35);
+        Data_wifi = String(String(5) + "," + String(Time) + "," + String(Corrected_Voltage_ADC0,Number_Decimal) + "," + String(Corrected_Voltage_ADC1,Number_Decimal) + "," +
+                           "," + String(Corrected_Voltage_ADC2,Number_Decimal) + "," + String(Corrected_Voltage_ADC3,Number_Decimal) + "," + String(Corrected_Voltage_ADC_Pin_34,Number_Decimal) +
+                           "," + String(Corrected_Voltage_ADC_Pin_35,Number_Decimal));
+
+
+
 
         break;
 
@@ -539,9 +550,13 @@ void Display_OLED()
         display.print(Corrected_Voltage_ADC_Pin_32);
         display.display();
 
-        Data_wifi = String(String(6) + "," + String(Time) + "," + Corrected_Voltage_ADC0 + "," + Corrected_Voltage_ADC1 +
-                           "," + Corrected_Voltage_ADC2 + "," + Corrected_Voltage_ADC3 + "," + Corrected_Voltage_ADC_Pin_34 +
-                           "," + Corrected_Voltage_ADC_Pin_35 + "," + Corrected_Voltage_ADC_Pin_32);
+        Data_wifi = String(String(6) + "," + String(Time) + "," + String(Corrected_Voltage_ADC0,Number_Decimal) + "," + String(Corrected_Voltage_ADC1,Number_Decimal) +
+                           "," + String(Corrected_Voltage_ADC2,Number_Decimal) + "," + String(Corrected_Voltage_ADC3,Number_Decimal) + "," + String(Corrected_Voltage_ADC_Pin_34,Number_Decimal) +
+                           "," + String(Corrected_Voltage_ADC_Pin_35,Number_Decimal) + "," + String(Corrected_Voltage_ADC_Pin_32,Number_Decimal));
+
+
+
+
 
         break;
 
@@ -607,9 +622,12 @@ void Display_OLED()
         display.print(Corrected_Voltage_ADC_Pin_33);
         display.display();
 
-        Data_wifi = String(String(7) + "," + String(Time) + "," + Corrected_Voltage_ADC0 + "," + Corrected_Voltage_ADC1 +
-                           "," + Corrected_Voltage_ADC2 + "," + Corrected_Voltage_ADC3 + "," + Corrected_Voltage_ADC_Pin_34 +
-                           "," + Corrected_Voltage_ADC_Pin_35 + "," + Corrected_Voltage_ADC_Pin_32 + "," + Corrected_Voltage_ADC_Pin_33);
+        Data_wifi = String(String(7) + "," + String(Time) + "," + String(Corrected_Voltage_ADC0,Number_Decimal) + "," + String(Corrected_Voltage_ADC1,Number_Decimal) +
+                           "," + String(Corrected_Voltage_ADC2,Number_Decimal) + "," + String(Corrected_Voltage_ADC3,Number_Decimal) + "," + String(Corrected_Voltage_ADC_Pin_34,Number_Decimal) +
+                           "," + String(Corrected_Voltage_ADC_Pin_35,Number_Decimal) + "," + String(Corrected_Voltage_ADC_Pin_32,Number_Decimal) + "," + String(Corrected_Voltage_ADC_Pin_33,Number_Decimal));
+
+
+
 
         break;
 
@@ -635,7 +653,10 @@ void Display_OLED()
         display.display();
 
         //Data_Serial = String(String(Time) + "," + Corrected_Voltage_ADC0);
-        Data_wifi = String(String(12) + "," + String(Time) + "," + (Voltage_Diff_ADC_2_3));
+        Data_wifi = String(String(12) + "," + String(Time) + "," + String(Voltage_Diff_ADC_2_3,Number_Decimal));
+
+
+
 
         break;
 
@@ -667,7 +688,10 @@ void Display_OLED()
         display.print(Voltage_Diff_ADC_0_1);
         display.display();
 
-        Data_wifi = String(String(11) + "," + String(Time) + "," + Current_ADC_0_1_High_Side + "," + Voltage_Diff_ADC_0_1);
+        Data_wifi = String(String(11) + "," + String(Time) + "," + String(Current_ADC_0_1_High_Side,Number_Decimal) + "," + String(Voltage_Diff_ADC_0_1,Number_Decimal));
+
+
+
 
         break;
 
@@ -706,8 +730,9 @@ void Display_OLED()
         display.print(Corrected_Voltage_ADC3);
         display.display();
 
-        Data_wifi = String(String(10) + "," + String(Time) + "," + Current_ADC_0_1_High_Side + "," + Voltage_Diff_ADC_0_1 + "," +
-                           "," + Corrected_Voltage_ADC2 + "," + Corrected_Voltage_ADC3);
+        Data_wifi = String(String(10) + "," + String(Time) + "," + String(Current_ADC_0_1_High_Side,Number_Decimal) + "," + String(Voltage_Diff_ADC_0_1,Number_Decimal) + "," +
+                           "," + String(Corrected_Voltage_ADC2,Number_Decimal) + "," + String(Corrected_Voltage_ADC3,Number_Decimal));
+
 
         break;
 
@@ -746,8 +771,10 @@ void Display_OLED()
         display.print(Voltage_Diff_ADC_2_3);
         display.display();
 
-        Data_wifi = String(String(9) + "," + String(Time) + "," + Current_ADC_0_1_High_Side + "," + Voltage_Diff_ADC_0_1 +
-                           "," + Current_ADC_2_3_High_Side + "," + Voltage_Diff_ADC_2_3);
+        Data_wifi = String(String(9) + "," + String(Time) + "," + String(Current_ADC_0_1_High_Side,Number_Decimal) + "," + String(Voltage_Diff_ADC_0_1,Number_Decimal) +
+                           "," + String(Current_ADC_2_3_High_Side,Number_Decimal) + "," + String(Voltage_Diff_ADC_2_3,Number_Decimal));
+
+
 
         break;
 
@@ -809,9 +836,12 @@ void Display_OLED()
         display.print(Corrected_Voltage_ADC_Pin_33);
         display.display();
 
-        Data_wifi = String(String(8) + "," + String(Time) + "," + Current_ADC_0_1_High_Side + "," + Voltage_Diff_ADC_0_1 +
-                           "," + Current_ADC_2_3_High_Side + "," + Voltage_Diff_ADC_2_3 + "," + Corrected_Voltage_ADC_Pin_34 +
-                           "," + Corrected_Voltage_ADC_Pin_35 + "," + Corrected_Voltage_ADC_Pin_32 + "," + Corrected_Voltage_ADC_Pin_33);
+        Data_wifi = String(String(8) + "," + String(Time) + "," + String(Current_ADC_0_1_High_Side,Number_Decimal) + "," + String(Voltage_Diff_ADC_0_1,Number_Decimal) +
+                           "," + String(Current_ADC_2_3_High_Side,Number_Decimal) + "," + String(Voltage_Diff_ADC_2_3,Number_Decimal) + "," + String(Corrected_Voltage_ADC_Pin_34,Number_Decimal) +
+                           "," + String(Corrected_Voltage_ADC_Pin_35,Number_Decimal) + "," + String(Corrected_Voltage_ADC_Pin_32,Number_Decimal) + "," + String(Corrected_Voltage_ADC_Pin_33,Number_Decimal));
+
+
+
 
         break;
 
@@ -836,7 +866,8 @@ void Display_OLED()
         display.print(Corrected_Voltage_ADC0);
         display.display();
 
-        Data_wifi = String(String(0) + "," + String(Time) + "," + Corrected_Voltage_ADC0);
+        Data_wifi = String(String(0) + "," + String(Time) + "," + String(Corrected_Voltage_ADC0,Number_Decimal));
+
 
         break;
     }
