@@ -241,6 +241,14 @@ void Display_OLED()
         display.setCursor(0, 0);
         display.setTextSize(1);
         display.println("A0 ");
+
+        display.setCursor(80, 0);
+        if (Touch_WIFI == true)
+            display.println("wifi");
+
+        display.setCursor(110, 0);
+        display.println(Number_Touching_2);
+
         display.setCursor(0, 17);
         display.setTextSize(4);
         display.print(Corrected_Voltage_ADC0);
@@ -772,7 +780,6 @@ void Change_Sample_Rate()
         if (Number_Touching_2 >= 7)
         {
             Number_Touching_2 = 0;
-           
         }
 
         Serial.println(Number_Touching_2);
@@ -823,7 +830,7 @@ void Change_Sample_Rate()
             Number_Samples_ADC_ESP32_Second_Loop = 40;
             Number_Samples_ADS1115 = 40;
         }
-     }
+    }
 }
 
 void setup(void)
