@@ -21,8 +21,8 @@ IPAddress subnet(255, 255, 255, 0);
 String Data_wifi;
 String Data_Serial;
 
-volatile volboolean Touch_WIFI = false;
-boolean Light_Sleep = false;
+volatile boolean Touch_WIFI = false;
+volatile boolean Light_Sleep = false;
 
 WiFiServer server(80);
 
@@ -126,7 +126,7 @@ float Voltage_Diff_ADC_2_3;
 float Current_ADC_GPIO34_GPIO35_High_Side;
 
 unsigned long Time_from_Begin;
-unsigned long Time_from_Awake;
+volatile unsigned long Time_from_Awake;
 unsigned long Time_Wifi_Zero;
 unsigned long Time_To_Sleep = 20000 ; // 2 minutes before entering sleeping mode
 long Diff_Time;
@@ -139,9 +139,9 @@ boolean Trigger_Time_Zero_For_Wifi = false;
 //float Current_ADC_3_Low_Side  ;
 
 //parameter for capacititve touch
-uint8_t threshold = 50;
-int8_t Number_Touching = 0;
-int8_t Number_Touching_2 = 0; //for sample rate
+uint8_t threshold = 30;
+volatile int8_t Number_Touching = 0;
+volatile int8_t Number_Touching_2 = 0; //for sample rate
 volatile unsigned long sinceLastTouch = 0;
 
 // parameter for retrieving result from SPIFF file
@@ -901,13 +901,13 @@ void Choose_WIFI()
         if (Touch_WIFI == false)
         {
             Touch_WIFI = true;
-            //     Serial.println("Wifi activated");
+            Serial.println("Wifi activated");
         }
         else if (Touch_WIFI == true)
         {
             Touch_WIFI = false;
 
-            //     Serial.println("Wifi stopped");
+            Serial.println("Wifi stopped");
         }
     }
 }
@@ -935,6 +935,7 @@ void Change_Sample_Rate()
             Number_Touching_2 = 0;
         }
 
+        Serial.print("new speed= ");
         Serial.println(Number_Touching_2);
 
         switch (Number_Touching_2)
@@ -991,7 +992,7 @@ void setup(void)
 
     Serial.begin(115200);
     ads1115.begin();
-    Serial.println(Number_Touching);
+    
     // wifi stuff
 
     //  This part of code will try create static IP address
@@ -1048,10 +1049,18 @@ void setup(void)
             ; // Don't proceed, loop forever
     }
 
+
+   // Serial.println(Number_Touching);
+   // Serial.println(Touch_WIFI);
+
     touchAttachInterrupt(T0, Choose_WIFI, threshold);
     touchAttachInterrupt(T6, Change_Sample_Rate, threshold);
     touchAttachInterrupt(T2, Choose_Program_Display_Next, threshold);
     touchAttachInterrupt(T3, Choose_Program_Display_Previous, threshold);
+
+    
+    //Serial.println(Number_Touching);
+    //Serial.println(Touch_WIFI);
 
     esp_sleep_enable_touchpad_wakeup();
 
@@ -1074,11 +1083,11 @@ void setup(void)
     Time_from_Awake = Time_from_Begin;
 
 // some problems with capa touch thus reinit here the variable
-    Touch_WIFI = false;
-    Light_Sleep = false;
+    // Touch_WIFI = false;
+    // Light_Sleep = false;
 
-    Number_Touching = 0; // looks to set at 1 automatically thus reset to zero at the end of setup
-    Serial.println(Number_Touching);
+    // Number_Touching = 0; // looks to set at 1 automatically thus reset to zero at the end of setup
+    // Serial.println(Number_Touching);
 }
 
 void loop(void)
