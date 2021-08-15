@@ -139,7 +139,7 @@ boolean Trigger_Time_Zero_For_Wifi = false;
 //float Current_ADC_3_Low_Side  ;
 
 //parameter for capacititve touch
-uint8_t threshold = 30;
+uint8_t threshold = 30; // higher generate some bugs 
 volatile int8_t Number_Touching = 0;
 volatile int8_t Number_Touching_2 = 0; //for sample rate
 volatile unsigned long sinceLastTouch = 0;
@@ -1064,19 +1064,19 @@ void setup(void)
 
     esp_sleep_enable_touchpad_wakeup();
 
-    display.clearDisplay();
+    // display.clearDisplay();
 
-    display.setTextSize(2);
-    display.setTextColor(WHITE);
-    display.setCursor(0, 0);
-    display.println("Welcome!");
-    display.println("Measure");
-    display.println("Voltage");
-    display.println("Max 20V");
+    // display.setTextSize(2);
+    // display.setTextColor(WHITE);
+    // display.setCursor(0, 0);
+    // display.println("Welcome!");
+    // display.println("Measure");
+    // display.println("Voltage");
+    // display.println("Max 20V");
 
-    display.display();
+    // display.display();
 
-    delay(1000);
+    // delay(1000);
 
     Time_from_Begin = millis();
 
