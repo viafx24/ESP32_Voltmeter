@@ -128,7 +128,7 @@ float Current_ADC_GPIO34_GPIO35_High_Side;
 unsigned long Time_from_Begin;
 volatile unsigned long Time_from_Awake;
 unsigned long Time_Wifi_Zero;
-unsigned long Time_To_Sleep = 20000 ; // 2 minutes before entering sleeping mode
+unsigned long Time_To_Sleep = 20000; // 2 minutes before entering sleeping mode
 long Diff_Time;
 unsigned long Time;
 boolean Trigger_Time_Zero_For_Wifi = false;
@@ -139,7 +139,7 @@ boolean Trigger_Time_Zero_For_Wifi = false;
 //float Current_ADC_3_Low_Side  ;
 
 //parameter for capacititve touch
-uint8_t threshold = 30; // higher generate some bugs 
+uint8_t threshold = 30; // higher generate some bugs
 volatile int8_t Number_Touching = 0;
 volatile int8_t Number_Touching_2 = 0; //for sample rate
 volatile unsigned long sinceLastTouch = 0;
@@ -173,8 +173,8 @@ void Compute_Voltage_from_ADS1115()
 
     // differential High side measure of current
 
-    Current_ADC_0_1_High_Side = (Corrected_Voltage_ADC0 - Corrected_Voltage_ADC1) / R_Shunt_1;
-    Current_ADC_2_3_High_Side = (Corrected_Voltage_ADC2 - Corrected_Voltage_ADC3) / R_Shunt_2;
+    Current_ADC_0_1_High_Side = ((Corrected_Voltage_ADC0 - Corrected_Voltage_ADC1) / R_Shunt_1) * 1000;// *1000 for mA
+    Current_ADC_2_3_High_Side = ((Corrected_Voltage_ADC2 - Corrected_Voltage_ADC3) / R_Shunt_2) * 1000;
 
     Voltage_Diff_ADC_0_1 = Corrected_Voltage_ADC0 - Corrected_Voltage_ADC1;
     Voltage_Diff_ADC_2_3 = Corrected_Voltage_ADC2 - Corrected_Voltage_ADC3;
@@ -279,7 +279,6 @@ void Display_OLED()
         display.setCursor(102, 0);
         display.println(Corrected_Voltage_ADC_Pin_39);
 
-
         display.setCursor(0, 16);
         display.setTextSize(2);
         display.print(Corrected_Voltage_ADC0);
@@ -310,8 +309,6 @@ void Display_OLED()
 
         display.setCursor(102, 0);
         display.println(Corrected_Voltage_ADC_Pin_39);
-
-
 
         display.setCursor(40, 0);
         display.print(Corrected_Voltage_ADC0);
@@ -349,7 +346,6 @@ void Display_OLED()
 
         display.setCursor(102, 0);
         display.println(Corrected_Voltage_ADC_Pin_39);
-
 
         display.setCursor(40, 0);
         display.print(Corrected_Voltage_ADC0);
@@ -443,7 +439,6 @@ void Display_OLED()
         display.setCursor(102, 0);
         display.println(Corrected_Voltage_ADC_Pin_39);
 
-
         display.setCursor(40, 0);
         display.print(Corrected_Voltage_ADC0);
 
@@ -499,8 +494,6 @@ void Display_OLED()
 
         display.setCursor(102, 0);
         display.println(Corrected_Voltage_ADC_Pin_39);
-
-
 
         display.setCursor(40, 0);
         display.print(Corrected_Voltage_ADC0);
@@ -616,6 +609,32 @@ void Display_OLED()
 
         break;
 
+    case 12:
+
+        display.setCursor(0, 0);
+        display.setTextSize(1);
+        display.println("Diff A2-A3(V) ");
+
+        display.setCursor(80, 0);
+        display.println(Number_Touching_2);
+
+        display.setCursor(92, 0);
+        if (Touch_WIFI == true)
+            display.println("w");
+
+        display.setCursor(102, 0);
+        display.println(Corrected_Voltage_ADC_Pin_39);
+
+        display.setCursor(0, 17);
+        display.setTextSize(4);
+        display.print(Voltage_Diff_ADC_2_3);
+        display.display();
+
+        //Data_Serial = String(String(Time) + "," + Corrected_Voltage_ADC0);
+        Data_wifi = String(String(Time) + "," + (Voltage_Diff_ADC_2_3));
+
+        break;
+
     case 11:
 
         display.setCursor(0, 0);
@@ -664,7 +683,6 @@ void Display_OLED()
         display.setCursor(102, 0);
         display.println(Corrected_Voltage_ADC_Pin_39);
 
-
         display.setCursor(0, 8);
         display.print(Current_ADC_0_1_High_Side);
 
@@ -705,7 +723,6 @@ void Display_OLED()
         display.setCursor(102, 0);
         display.println(Corrected_Voltage_ADC_Pin_39);
 
-
         display.setCursor(0, 8);
         display.print(Current_ADC_0_1_High_Side);
 
@@ -744,7 +761,6 @@ void Display_OLED()
         display.setCursor(114, 0);
         if (Touch_WIFI == true)
             display.println("w");
-
 
         display.setCursor(0, 8);
         display.println("A0-A1(V)");
@@ -811,7 +827,6 @@ void Display_OLED()
         display.setCursor(102, 0);
         display.println(Corrected_Voltage_ADC_Pin_39);
 
-
         display.setCursor(0, 17);
         display.setTextSize(4);
         display.print(Corrected_Voltage_ADC0);
@@ -840,7 +855,7 @@ void Choose_Program_Display_Next()
     {
         Number_Touching++;
 
-        if (Number_Touching > 11)
+        if (Number_Touching > 12)
         {
             Number_Touching = 0;
         }
@@ -852,7 +867,7 @@ void Choose_Program_Display_Next()
 
 void Choose_Program_Display_Previous()
 {
-    
+
     if (millis() - sinceLastTouch < 500)
         return;
     sinceLastTouch = millis();
@@ -874,7 +889,7 @@ void Choose_Program_Display_Previous()
 
         if (Number_Touching < 0)
         {
-            Number_Touching = 11;
+            Number_Touching = 12;
         }
 
         Serial.println(Number_Touching);
@@ -992,7 +1007,7 @@ void setup(void)
 
     Serial.begin(115200);
     ads1115.begin();
-    
+
     // wifi stuff
 
     //  This part of code will try create static IP address
@@ -1049,16 +1064,14 @@ void setup(void)
             ; // Don't proceed, loop forever
     }
 
-
-   // Serial.println(Number_Touching);
-   // Serial.println(Touch_WIFI);
+    // Serial.println(Number_Touching);
+    // Serial.println(Touch_WIFI);
 
     touchAttachInterrupt(T0, Choose_WIFI, threshold);
     touchAttachInterrupt(T6, Change_Sample_Rate, threshold);
     touchAttachInterrupt(T2, Choose_Program_Display_Next, threshold);
     touchAttachInterrupt(T3, Choose_Program_Display_Previous, threshold);
 
-    
     //Serial.println(Number_Touching);
     //Serial.println(Touch_WIFI);
 
@@ -1082,7 +1095,7 @@ void setup(void)
 
     Time_from_Awake = Time_from_Begin;
 
-// some problems with capa touch thus reinit here the variable
+    // some problems with capa touch thus reinit here the variable
     // Touch_WIFI = false;
     // Light_Sleep = false;
 
