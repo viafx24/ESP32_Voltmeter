@@ -233,7 +233,7 @@ void Compute_Voltage_from_ESP32()
     Corrected_Voltage_ADC_Pin_35 = (Voltage_Bridge_ADC_Pin_35.average() * (R_100k_35 + R_10k_35)) / R_10k_35;
     Corrected_Voltage_ADC_Pin_34 = (Voltage_Bridge_ADC_Pin_34.average() * (R_100k_34 + R_10k_34)) / R_10k_34;
     Corrected_Voltage_ADC_Pin_39 = (Voltage_Bridge_ADC_Pin_39.average() * (98000 + R_10k_SN)) / R_10k_SN; 
-    Battery_Percentage = round(100 - ((Corrected_Voltage_ADC_Pin_39-3.624)*pow(10,3)/-2.7931));
+    Battery_Percentage = round(100 - ((Corrected_Voltage_ADC_Pin_39-3.624)*pow(10,3)/-2.7931))
     
     // R_100k not measure yet
     // Corrected_Voltage_ADC_Pin_36 = (Voltage_Bridge_ADC_Pin_36.average() * (R1 + R2)) / R2;
@@ -263,7 +263,7 @@ void Display_OLED()
             display.println("w");
 
         display.setCursor(102, 0);
-        display.println(Corrected_Voltage_ADC_Pin_39);
+        display.println(Battery_Percentage);
 
         display.setCursor(0, 17);
         display.setTextSize(4);
@@ -289,7 +289,7 @@ void Display_OLED()
             display.println("w");
 
         display.setCursor(102, 0);
-        display.println(Corrected_Voltage_ADC_Pin_39);
+        display.println(Battery_Percentage);
 
         display.setCursor(0, 16);
         display.setTextSize(2);
@@ -320,7 +320,7 @@ void Display_OLED()
             display.println("w");
 
         display.setCursor(102, 0);
-        display.println(Corrected_Voltage_ADC_Pin_39);
+        display.println(Battery_Percentage);
 
         display.setCursor(40, 0);
         display.print(Corrected_Voltage_ADC0);
@@ -357,7 +357,7 @@ void Display_OLED()
             display.println("w");
 
         display.setCursor(102, 0);
-        display.println(Corrected_Voltage_ADC_Pin_39);
+        display.println(Battery_Percentage);
 
         display.setCursor(40, 0);
         display.print(Corrected_Voltage_ADC0);
@@ -402,7 +402,7 @@ void Display_OLED()
             display.println("w");
 
         display.setCursor(102, 0);
-        display.println(Corrected_Voltage_ADC_Pin_39);
+        display.println(Battery_Percentage);
 
         display.setCursor(40, 0);
         display.print(Corrected_Voltage_ADC0);
@@ -454,7 +454,7 @@ void Display_OLED()
             display.println("w");
 
         display.setCursor(102, 0);
-        display.println(Corrected_Voltage_ADC_Pin_39);
+        display.println(Battery_Percentage);
 
         display.setCursor(40, 0);
         display.print(Corrected_Voltage_ADC0);
@@ -513,7 +513,7 @@ void Display_OLED()
             display.println("w");
 
         display.setCursor(102, 0);
-        display.println(Corrected_Voltage_ADC_Pin_39);
+        display.println(Battery_Percentage);
 
         display.setCursor(40, 0);
         display.print(Corrected_Voltage_ADC0);
@@ -579,7 +579,7 @@ void Display_OLED()
             display.println("w");
 
         display.setCursor(102, 0);
-        display.println(Corrected_Voltage_ADC_Pin_39);
+        display.println(Battery_Percentage);
 
         display.setCursor(40, 0);
         display.print(Corrected_Voltage_ADC0);
@@ -650,7 +650,7 @@ void Display_OLED()
             display.println("w");
 
         display.setCursor(102, 0);
-        display.println(Corrected_Voltage_ADC_Pin_39);
+        display.println(Battery_Percentage);
 
         display.setCursor(0, 17);
         display.setTextSize(4);
@@ -679,7 +679,7 @@ void Display_OLED()
             display.println("w");
 
         display.setCursor(102, 0);
-        display.println(Corrected_Voltage_ADC_Pin_39);
+        display.println(Battery_Percentage);
 
         display.setCursor(0, 16);
         display.setTextSize(2);
@@ -714,7 +714,7 @@ void Display_OLED()
             display.println("w");
 
         display.setCursor(102, 0);
-        display.println(Corrected_Voltage_ADC_Pin_39);
+        display.println(Battery_Percentage);
 
         display.setCursor(0, 8);
         display.print(Current_ADC_0_1_High_Side);
@@ -755,7 +755,7 @@ void Display_OLED()
             display.println("w");
 
         display.setCursor(102, 0);
-        display.println(Corrected_Voltage_ADC_Pin_39);
+        display.println(Battery_Percentage);
 
         display.setCursor(0, 8);
         display.print(Current_ADC_0_1_High_Side);
@@ -804,7 +804,7 @@ void Display_OLED()
         display.print(Voltage_Diff_ADC_0_1);
 
         display.setCursor(102, 24);
-        display.println(Corrected_Voltage_ADC_Pin_39);
+        display.println(Battery_Percentage);
 
         display.setCursor(0, 16);
         display.println("A2-A3(mA)");
@@ -864,7 +864,7 @@ void Display_OLED()
             display.println("w");
 
         display.setCursor(102, 0);
-        display.println(Corrected_Voltage_ADC_Pin_39);
+        display.println(Battery_Percentage);
 
         display.setCursor(0, 17);
         display.setTextSize(4);
