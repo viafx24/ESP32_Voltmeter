@@ -22,6 +22,8 @@ String Data_wifi;
 String Data_Serial;
 uint8_t Number_Decimal=5;
 
+int Battery_Percentage;
+
 volatile boolean Touch_WIFI = false;
 volatile boolean Light_Sleep = false;
 
@@ -230,7 +232,10 @@ void Compute_Voltage_from_ESP32()
     Corrected_Voltage_ADC_Pin_32 = (Voltage_Bridge_ADC_Pin_32.average() * (R_100k_32 + R_10k_32)) / R_10k_32;
     Corrected_Voltage_ADC_Pin_35 = (Voltage_Bridge_ADC_Pin_35.average() * (R_100k_35 + R_10k_35)) / R_10k_35;
     Corrected_Voltage_ADC_Pin_34 = (Voltage_Bridge_ADC_Pin_34.average() * (R_100k_34 + R_10k_34)) / R_10k_34;
-    Corrected_Voltage_ADC_Pin_39 = (Voltage_Bridge_ADC_Pin_39.average() * (98000 + R_10k_SN)) / R_10k_SN; // R_100k not measure yet
+    Corrected_Voltage_ADC_Pin_39 = (Voltage_Bridge_ADC_Pin_39.average() * (98000 + R_10k_SN)) / R_10k_SN; 
+    Battery_Percentage = round(100 - ((Corrected_Voltage_ADC_Pin_39-3.624)*pow(10,3)/-2.7931));
+    
+    // R_100k not measure yet
     // Corrected_Voltage_ADC_Pin_36 = (Voltage_Bridge_ADC_Pin_36.average() * (R1 + R2)) / R2;
 }
 
@@ -485,7 +490,7 @@ void Display_OLED()
         display.print(Corrected_Voltage_ADC_Pin_35);
         display.display();
 
-        Data_wifi = String(String(5) + "," + String(Time) + "," + String(Corrected_Voltage_ADC0,Number_Decimal) + "," + String(Corrected_Voltage_ADC1,Number_Decimal) + "," +
+        Data_wifi = String(String(5) + "," + String(Time) + "," + String(Corrected_Voltage_ADC0,Number_Decimal) + "," + String(Corrected_Voltage_ADC1,Number_Decimal) + 
                            "," + String(Corrected_Voltage_ADC2,Number_Decimal) + "," + String(Corrected_Voltage_ADC3,Number_Decimal) + "," + String(Corrected_Voltage_ADC_Pin_34,Number_Decimal) +
                            "," + String(Corrected_Voltage_ADC_Pin_35,Number_Decimal));
 
@@ -635,7 +640,7 @@ void Display_OLED()
 
         display.setCursor(0, 0);
         display.setTextSize(1);
-        display.println("Diff A2-A3(V) ");
+        display.println("A2-A3(V)");
 
         display.setCursor(80, 0);
         display.println(Number_Touching_2);
@@ -730,7 +735,7 @@ void Display_OLED()
         display.print(Corrected_Voltage_ADC3);
         display.display();
 
-        Data_wifi = String(String(10) + "," + String(Time) + "," + String(Current_ADC_0_1_High_Side,Number_Decimal) + "," + String(Voltage_Diff_ADC_0_1,Number_Decimal) + "," +
+        Data_wifi = String(String(10) + "," + String(Time) + "," + String(Current_ADC_0_1_High_Side,Number_Decimal) + "," + String(Voltage_Diff_ADC_0_1,Number_Decimal) + 
                            "," + String(Corrected_Voltage_ADC2,Number_Decimal) + "," + String(Corrected_Voltage_ADC3,Number_Decimal));
 
 
@@ -786,10 +791,10 @@ void Display_OLED()
         display.setCursor(60, 0);
         display.print(Current_ADC_0_1_High_Side);
 
-        display.setCursor(102, 0);
+        display.setCursor(102, 8);
         display.println(Number_Touching_2);
 
-        display.setCursor(114, 0);
+        display.setCursor(114, 8);
         if (Touch_WIFI == true)
             display.println("w");
 
@@ -798,7 +803,7 @@ void Display_OLED()
         display.setCursor(60, 8);
         display.print(Voltage_Diff_ADC_0_1);
 
-        display.setCursor(102, 8);
+        display.setCursor(102, 24);
         display.println(Corrected_Voltage_ADC_Pin_39);
 
         display.setCursor(0, 16);
@@ -1174,12 +1179,14 @@ void loop(void)
 
         if (client)
         {
+            Trigger_Time_Zero_For_Wifi = false;
+
             while (client.connected())
             { // Attention, Si perds la connection wifi, les temps ne seront plus corrects
 
 
-                // I finally decided to comment the Trigger_Time_Zero to begin each connexion at time zero.
-                if ((client.connected())) //  && Trigger_Time_Zero_For_Wifi == false)
+
+                if ((client.connected())  && (Trigger_Time_Zero_For_Wifi == false))
                 {
                     Time_Wifi_Zero = millis();
                     Trigger_Time_Zero_For_Wifi = true;
@@ -1197,6 +1204,7 @@ void loop(void)
                 if (Touch_WIFI == false)
                 {
                     client.stop();
+                    
                     break;
                 }
             }
