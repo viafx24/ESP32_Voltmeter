@@ -998,41 +998,41 @@ void Change_Sample_Rate()
 
         case 1:
 
-            Number_Samples_ADC_ESP32_Second_Loop = 1;
+            Number_Samples_ADC_ESP32_Second_Loop = 5;
             Number_Samples_ADS1115 = 5;
 
             break;
 
         case 2:
 
-            Number_Samples_ADC_ESP32_Second_Loop = 1;
+            Number_Samples_ADC_ESP32_Second_Loop = 10;
             Number_Samples_ADS1115 = 10;
 
             break;
 
         case 3:
 
-            Number_Samples_ADC_ESP32_Second_Loop = 1;
+            Number_Samples_ADC_ESP32_Second_Loop = 20;
             Number_Samples_ADS1115 = 20;
 
             break;
 
         case 4:
             Number_Samples_ADC_ESP32_Second_Loop = 1;
-            Number_Samples_ADS1115 = 40;
+            Number_Samples_ADS1115 = 5;
 
             break;
 
         case 5:
 
-            Number_Samples_ADC_ESP32_Second_Loop = 20;
-            Number_Samples_ADS1115 = 20;
+            Number_Samples_ADC_ESP32_Second_Loop = 1;
+            Number_Samples_ADS1115 = 10;
             break;
 
         case 6:
 
-            Number_Samples_ADC_ESP32_Second_Loop = 40;
-            Number_Samples_ADS1115 = 40;
+            Number_Samples_ADC_ESP32_Second_Loop = 1;
+            Number_Samples_ADS1115 = 20;
         }
     }
 }
@@ -1177,7 +1177,9 @@ void loop(void)
             while (client.connected())
             { // Attention, Si perds la connection wifi, les temps ne seront plus corrects
 
-                if ((client.connected()) && Trigger_Time_Zero_For_Wifi == false)
+
+                // I finally decided to comment the Trigger_Time_Zero to begin each connexion at time zero.
+                if ((client.connected())) //  && Trigger_Time_Zero_For_Wifi == false)
                 {
                     Time_Wifi_Zero = millis();
                     Trigger_Time_Zero_For_Wifi = true;
