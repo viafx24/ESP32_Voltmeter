@@ -20,7 +20,7 @@ IPAddress subnet(255, 255, 255, 0);
 
 String Data_wifi;
 String Data_Serial;
-uint8_t Number_Decimal=5;
+uint8_t Number_Decimal = 5;
 
 int Battery_Percentage;
 
@@ -50,8 +50,6 @@ Adafruit_ADS1115 ads1115;
 uint16_t Number_Samples_ADC_ESP32 = 48;
 uint16_t Number_Samples_ADC_ESP32_Second_Loop = 1;
 uint16_t Number_Samples_ADS1115 = 1;
-
-
 
 uint32_t R_20k_ADS0 = 19.89 * 1000;
 uint32_t R_20k_ADS1 = 19.70 * 1000;
@@ -146,7 +144,7 @@ boolean Trigger_Time_Zero_For_Wifi = false;
 //parameter for capacititve touch
 
 // the triggered level (when the finger touch the capa touch) is not the same as the one witH USB vs battery.
-// first case: activated level=10; on battery: activated level=45: thus I need to set up the threshold to 50 
+// first case: activated level=10; on battery: activated level=45: thus I need to set up the threshold to 50
 // battery and to lower it to 30 when using the wire.
 uint8_t threshold = 50; // higher generate some bugs
 volatile int8_t Number_Touching = 0;
@@ -182,7 +180,7 @@ void Compute_Voltage_from_ADS1115()
 
     // differential High side measure of current
 
-    Current_ADC_0_1_High_Side = ((Corrected_Voltage_ADC0 - Corrected_Voltage_ADC1) / R_Shunt_1) * 1000;// *1000 for mA
+    Current_ADC_0_1_High_Side = ((Corrected_Voltage_ADC0 - Corrected_Voltage_ADC1) / R_Shunt_1) * 1000; // *1000 for mA
     Current_ADC_2_3_High_Side = ((Corrected_Voltage_ADC2 - Corrected_Voltage_ADC3) / R_Shunt_2) * 1000;
 
     Voltage_Diff_ADC_0_1 = Corrected_Voltage_ADC0 - Corrected_Voltage_ADC1;
@@ -232,9 +230,16 @@ void Compute_Voltage_from_ESP32()
     Corrected_Voltage_ADC_Pin_32 = (Voltage_Bridge_ADC_Pin_32.average() * (R_100k_32 + R_10k_32)) / R_10k_32;
     Corrected_Voltage_ADC_Pin_35 = (Voltage_Bridge_ADC_Pin_35.average() * (R_100k_35 + R_10k_35)) / R_10k_35;
     Corrected_Voltage_ADC_Pin_34 = (Voltage_Bridge_ADC_Pin_34.average() * (R_100k_34 + R_10k_34)) / R_10k_34;
-    Corrected_Voltage_ADC_Pin_39 = (Voltage_Bridge_ADC_Pin_39.average() * (98000 + R_10k_SN)) / R_10k_SN; 
-    Battery_Percentage = round(100 - ((Corrected_Voltage_ADC_Pin_39-3.624)*pow(10,3)/-2.7931))
-    
+    Corrected_Voltage_ADC_Pin_39 = (Voltage_Bridge_ADC_Pin_39.average() * (98000 + R_10k_SN)) / R_10k_SN;
+    Battery_Percentage = round(100 - ((Corrected_Voltage_ADC_Pin_39 - 3.624) * pow(10, 3) / -2.7931));
+    if (Battery_Percentage > 100)
+    {
+        // the equation uses to compute the battery level begins at 3.624 and then it remains approx. 20 000 seconds
+        // above 3.624, I consider 100% of battery (more than 5hours). care should be taken for long kinetics to take a look of Corrected_Voltage_ADC_Pin_39
+        // its level (for instance 3.8 ; 3.9 ; 4.05 4.18) may indicate a possible kinetics of more than 8-10 hours.
+        
+        Battery_Percentage = 100;
+    }
     // R_100k not measure yet
     // Corrected_Voltage_ADC_Pin_36 = (Voltage_Bridge_ADC_Pin_36.average() * (R1 + R2)) / R2;
 }
@@ -264,6 +269,7 @@ void Display_OLED()
 
         display.setCursor(102, 0);
         display.println(Battery_Percentage);
+        //Serial.println(Corrected_Voltage_ADC_Pin_39);
 
         display.setCursor(0, 17);
         display.setTextSize(4);
@@ -271,7 +277,7 @@ void Display_OLED()
         display.display();
 
         //Data_Serial = String(String(Time) + "," + Corrected_Voltage_ADC0);
-        Data_wifi = String(String(0) + "," + String(Time) + "," + String(Corrected_Voltage_ADC0,Number_Decimal));
+        Data_wifi = String(String(0) + "," + String(Time) + "," + String(Corrected_Voltage_ADC0, Number_Decimal));
 
         break;
 
@@ -303,7 +309,7 @@ void Display_OLED()
         display.print(Corrected_Voltage_ADC1);
         display.display();
 
-        Data_wifi = String(String(1) + "," + String(Time) + "," + String(Corrected_Voltage_ADC0,Number_Decimal) + "," + String(Corrected_Voltage_ADC1,Number_Decimal));
+        Data_wifi = String(String(1) + "," + String(Time) + "," + String(Corrected_Voltage_ADC0, Number_Decimal) + "," + String(Corrected_Voltage_ADC1, Number_Decimal));
         break;
 
     case 2:
@@ -338,8 +344,8 @@ void Display_OLED()
         display.print(Corrected_Voltage_ADC2);
         display.display();
 
-        Data_wifi = String(String(2) + "," + String(Time) + "," + String(Corrected_Voltage_ADC0,Number_Decimal) + "," + String(Corrected_Voltage_ADC1,Number_Decimal) +
-                           "," + String(Corrected_Voltage_ADC2,Number_Decimal));
+        Data_wifi = String(String(2) + "," + String(Time) + "," + String(Corrected_Voltage_ADC0, Number_Decimal) + "," + String(Corrected_Voltage_ADC1, Number_Decimal) +
+                           "," + String(Corrected_Voltage_ADC2, Number_Decimal));
 
         break;
 
@@ -381,10 +387,8 @@ void Display_OLED()
         display.print(Corrected_Voltage_ADC3);
         display.display();
 
-        Data_wifi = String(String(3) + "," + String(Time) + "," + String(Corrected_Voltage_ADC0,Number_Decimal) + "," + String(Corrected_Voltage_ADC1,Number_Decimal) +
-                           "," + String(Corrected_Voltage_ADC2,Number_Decimal) + "," + String(Corrected_Voltage_ADC3,Number_Decimal));
-
-
+        Data_wifi = String(String(3) + "," + String(Time) + "," + String(Corrected_Voltage_ADC0, Number_Decimal) + "," + String(Corrected_Voltage_ADC1, Number_Decimal) +
+                           "," + String(Corrected_Voltage_ADC2, Number_Decimal) + "," + String(Corrected_Voltage_ADC3, Number_Decimal));
 
         break;
 
@@ -432,11 +436,8 @@ void Display_OLED()
         display.print(Corrected_Voltage_ADC_Pin_34);
         display.display();
 
-        Data_wifi = String(String(4) + "," + String(Time) + "," + String(Corrected_Voltage_ADC0,Number_Decimal) + "," + String(Corrected_Voltage_ADC1,Number_Decimal) +
-                           "," + String(Corrected_Voltage_ADC2,Number_Decimal) + "," + String(Corrected_Voltage_ADC3,Number_Decimal) + "," + String(Corrected_Voltage_ADC_Pin_34,Number_Decimal));
-
-
-
+        Data_wifi = String(String(4) + "," + String(Time) + "," + String(Corrected_Voltage_ADC0, Number_Decimal) + "," + String(Corrected_Voltage_ADC1, Number_Decimal) +
+                           "," + String(Corrected_Voltage_ADC2, Number_Decimal) + "," + String(Corrected_Voltage_ADC3, Number_Decimal) + "," + String(Corrected_Voltage_ADC_Pin_34, Number_Decimal));
 
         break;
 
@@ -490,12 +491,9 @@ void Display_OLED()
         display.print(Corrected_Voltage_ADC_Pin_35);
         display.display();
 
-        Data_wifi = String(String(5) + "," + String(Time) + "," + String(Corrected_Voltage_ADC0,Number_Decimal) + "," + String(Corrected_Voltage_ADC1,Number_Decimal) + 
-                           "," + String(Corrected_Voltage_ADC2,Number_Decimal) + "," + String(Corrected_Voltage_ADC3,Number_Decimal) + "," + String(Corrected_Voltage_ADC_Pin_34,Number_Decimal) +
-                           "," + String(Corrected_Voltage_ADC_Pin_35,Number_Decimal));
-
-
-
+        Data_wifi = String(String(5) + "," + String(Time) + "," + String(Corrected_Voltage_ADC0, Number_Decimal) + "," + String(Corrected_Voltage_ADC1, Number_Decimal) +
+                           "," + String(Corrected_Voltage_ADC2, Number_Decimal) + "," + String(Corrected_Voltage_ADC3, Number_Decimal) + "," + String(Corrected_Voltage_ADC_Pin_34, Number_Decimal) +
+                           "," + String(Corrected_Voltage_ADC_Pin_35, Number_Decimal));
 
         break;
 
@@ -555,13 +553,9 @@ void Display_OLED()
         display.print(Corrected_Voltage_ADC_Pin_32);
         display.display();
 
-        Data_wifi = String(String(6) + "," + String(Time) + "," + String(Corrected_Voltage_ADC0,Number_Decimal) + "," + String(Corrected_Voltage_ADC1,Number_Decimal) +
-                           "," + String(Corrected_Voltage_ADC2,Number_Decimal) + "," + String(Corrected_Voltage_ADC3,Number_Decimal) + "," + String(Corrected_Voltage_ADC_Pin_34,Number_Decimal) +
-                           "," + String(Corrected_Voltage_ADC_Pin_35,Number_Decimal) + "," + String(Corrected_Voltage_ADC_Pin_32,Number_Decimal));
-
-
-
-
+        Data_wifi = String(String(6) + "," + String(Time) + "," + String(Corrected_Voltage_ADC0, Number_Decimal) + "," + String(Corrected_Voltage_ADC1, Number_Decimal) +
+                           "," + String(Corrected_Voltage_ADC2, Number_Decimal) + "," + String(Corrected_Voltage_ADC3, Number_Decimal) + "," + String(Corrected_Voltage_ADC_Pin_34, Number_Decimal) +
+                           "," + String(Corrected_Voltage_ADC_Pin_35, Number_Decimal) + "," + String(Corrected_Voltage_ADC_Pin_32, Number_Decimal));
 
         break;
 
@@ -627,12 +621,9 @@ void Display_OLED()
         display.print(Corrected_Voltage_ADC_Pin_33);
         display.display();
 
-        Data_wifi = String(String(7) + "," + String(Time) + "," + String(Corrected_Voltage_ADC0,Number_Decimal) + "," + String(Corrected_Voltage_ADC1,Number_Decimal) +
-                           "," + String(Corrected_Voltage_ADC2,Number_Decimal) + "," + String(Corrected_Voltage_ADC3,Number_Decimal) + "," + String(Corrected_Voltage_ADC_Pin_34,Number_Decimal) +
-                           "," + String(Corrected_Voltage_ADC_Pin_35,Number_Decimal) + "," + String(Corrected_Voltage_ADC_Pin_32,Number_Decimal) + "," + String(Corrected_Voltage_ADC_Pin_33,Number_Decimal));
-
-
-
+        Data_wifi = String(String(7) + "," + String(Time) + "," + String(Corrected_Voltage_ADC0, Number_Decimal) + "," + String(Corrected_Voltage_ADC1, Number_Decimal) +
+                           "," + String(Corrected_Voltage_ADC2, Number_Decimal) + "," + String(Corrected_Voltage_ADC3, Number_Decimal) + "," + String(Corrected_Voltage_ADC_Pin_34, Number_Decimal) +
+                           "," + String(Corrected_Voltage_ADC_Pin_35, Number_Decimal) + "," + String(Corrected_Voltage_ADC_Pin_32, Number_Decimal) + "," + String(Corrected_Voltage_ADC_Pin_33, Number_Decimal));
 
         break;
 
@@ -658,10 +649,7 @@ void Display_OLED()
         display.display();
 
         //Data_Serial = String(String(Time) + "," + Corrected_Voltage_ADC0);
-        Data_wifi = String(String(12) + "," + String(Time) + "," + String(Voltage_Diff_ADC_2_3,Number_Decimal));
-
-
-
+        Data_wifi = String(String(12) + "," + String(Time) + "," + String(Voltage_Diff_ADC_2_3, Number_Decimal));
 
         break;
 
@@ -693,10 +681,7 @@ void Display_OLED()
         display.print(Voltage_Diff_ADC_0_1);
         display.display();
 
-        Data_wifi = String(String(11) + "," + String(Time) + "," + String(Current_ADC_0_1_High_Side,Number_Decimal) + "," + String(Voltage_Diff_ADC_0_1,Number_Decimal));
-
-
-
+        Data_wifi = String(String(11) + "," + String(Time) + "," + String(Current_ADC_0_1_High_Side, Number_Decimal) + "," + String(Voltage_Diff_ADC_0_1, Number_Decimal));
 
         break;
 
@@ -735,9 +720,8 @@ void Display_OLED()
         display.print(Corrected_Voltage_ADC3);
         display.display();
 
-        Data_wifi = String(String(10) + "," + String(Time) + "," + String(Current_ADC_0_1_High_Side,Number_Decimal) + "," + String(Voltage_Diff_ADC_0_1,Number_Decimal) + 
-                           "," + String(Corrected_Voltage_ADC2,Number_Decimal) + "," + String(Corrected_Voltage_ADC3,Number_Decimal));
-
+        Data_wifi = String(String(10) + "," + String(Time) + "," + String(Current_ADC_0_1_High_Side, Number_Decimal) + "," + String(Voltage_Diff_ADC_0_1, Number_Decimal) +
+                           "," + String(Corrected_Voltage_ADC2, Number_Decimal) + "," + String(Corrected_Voltage_ADC3, Number_Decimal));
 
         break;
 
@@ -776,10 +760,8 @@ void Display_OLED()
         display.print(Voltage_Diff_ADC_2_3);
         display.display();
 
-        Data_wifi = String(String(9) + "," + String(Time) + "," + String(Current_ADC_0_1_High_Side,Number_Decimal) + "," + String(Voltage_Diff_ADC_0_1,Number_Decimal) +
-                           "," + String(Current_ADC_2_3_High_Side,Number_Decimal) + "," + String(Voltage_Diff_ADC_2_3,Number_Decimal));
-
-
+        Data_wifi = String(String(9) + "," + String(Time) + "," + String(Current_ADC_0_1_High_Side, Number_Decimal) + "," + String(Voltage_Diff_ADC_0_1, Number_Decimal) +
+                           "," + String(Current_ADC_2_3_High_Side, Number_Decimal) + "," + String(Voltage_Diff_ADC_2_3, Number_Decimal));
 
         break;
 
@@ -841,12 +823,9 @@ void Display_OLED()
         display.print(Corrected_Voltage_ADC_Pin_33);
         display.display();
 
-        Data_wifi = String(String(8) + "," + String(Time) + "," + String(Current_ADC_0_1_High_Side,Number_Decimal) + "," + String(Voltage_Diff_ADC_0_1,Number_Decimal) +
-                           "," + String(Current_ADC_2_3_High_Side,Number_Decimal) + "," + String(Voltage_Diff_ADC_2_3,Number_Decimal) + "," + String(Corrected_Voltage_ADC_Pin_34,Number_Decimal) +
-                           "," + String(Corrected_Voltage_ADC_Pin_35,Number_Decimal) + "," + String(Corrected_Voltage_ADC_Pin_32,Number_Decimal) + "," + String(Corrected_Voltage_ADC_Pin_33,Number_Decimal));
-
-
-
+        Data_wifi = String(String(8) + "," + String(Time) + "," + String(Current_ADC_0_1_High_Side, Number_Decimal) + "," + String(Voltage_Diff_ADC_0_1, Number_Decimal) +
+                           "," + String(Current_ADC_2_3_High_Side, Number_Decimal) + "," + String(Voltage_Diff_ADC_2_3, Number_Decimal) + "," + String(Corrected_Voltage_ADC_Pin_34, Number_Decimal) +
+                           "," + String(Corrected_Voltage_ADC_Pin_35, Number_Decimal) + "," + String(Corrected_Voltage_ADC_Pin_32, Number_Decimal) + "," + String(Corrected_Voltage_ADC_Pin_33, Number_Decimal));
 
         break;
 
@@ -871,8 +850,7 @@ void Display_OLED()
         display.print(Corrected_Voltage_ADC0);
         display.display();
 
-        Data_wifi = String(String(0) + "," + String(Time) + "," + String(Corrected_Voltage_ADC0,Number_Decimal));
-
+        Data_wifi = String(String(0) + "," + String(Time) + "," + String(Corrected_Voltage_ADC0, Number_Decimal));
 
         break;
     }
@@ -1135,7 +1113,7 @@ void setup(void)
 
     Time_from_Awake = Time_from_Begin;
 
-    // some problems with capa touch thus reinit here the variable (only needed when working on battery where i 
+    // some problems with capa touch thus reinit here the variable (only needed when working on battery where i
     // I need to set the threshold at a high level (50) cause the basal level is 40; on USB, less problems, those
     // lines are useless)
 
@@ -1184,9 +1162,7 @@ void loop(void)
             while (client.connected())
             { // Attention, Si perds la connection wifi, les temps ne seront plus corrects
 
-
-
-                if ((client.connected())  && (Trigger_Time_Zero_For_Wifi == false))
+                if ((client.connected()) && (Trigger_Time_Zero_For_Wifi == false))
                 {
                     Time_Wifi_Zero = millis();
                     Trigger_Time_Zero_For_Wifi = true;
@@ -1204,7 +1180,7 @@ void loop(void)
                 if (Touch_WIFI == false)
                 {
                     client.stop();
-                    
+
                     break;
                 }
             }
