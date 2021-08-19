@@ -1,14 +1,40 @@
 
-#include <Arduino.h>
+// This is a very long function (but there is only one!) to manage the functionnality of the ESP32-voltmeter.
+// the code is long and may appear ugly but I don't think it is particularly complictated. The length comes from
+// the fact that there is 8 possible channel measurements (every things is thus mutilply by 8).
+
+// this code proposes:
+//(1) to compute voltage using divider bridge of 4 channels of the ADS11115
+//(2) to compute voltage of 4 other channel of the ESP32 ADC 12 bit (GPIO 32,33,34,35)
+//(3) to display the result on an OLED 0.96 screen.
+//(4) to send data over wifi in order to watch voltage on a computer screen or plot voltage over time.
+//(5) to compute high side or low side current by adding for instance a 0.1 ohm resistor shunt
+//(6) to use a lookup table to correct the innacuracy of the ESP32 ADC (but do not provide the code to generate)
+// this table here)
+  
+// this is the beta version of the ESP32-Voltmeter thus bugs or errors may be present.
+
+// Keep in mind that the GPIO analog input of the ESP32 should never meet a voltage up to 3.3V. It's why a 1/10
+// divider bridge is used: to increase the range to roughly 3.3*10=33V. To keep security distance. Don't cross 20V.
+// !!!NEVER USED THIS VOLTMETER FOR MEASURING 220V!!! NEVER CROSS 20V!!!
+
+// Keep in mind that GPIO of the ESP32 are not linear close to zero volt. Thus, even by using a look-up table
+// to correct those inaccurate measurement, I could not correct between 0 and 0.125V: no measurement can't be done
+// in this range. If we mutliply by 10 with the divider bridge, no measurement are possible below 1.250V with the
+// GPIO of the ESP32. By contrast, there is NO problem with the ads1115 than can provide very accurate measures 
+// between 0 and 20 V (if using the appropriate divider bridge; if not: 3.3V maximum !!).
+
+
+#include <Arduino.h> // needed if one work with platformio in place of arduino IDE
 #include <Adafruit_ADS1X15.h>
 #include <WiFi.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#include <Adafruit_I2CDevice.h> // Guillaume add
-#include "SPIFFS.h"
-#include "Statistic.h"
+#include <Adafruit_I2CDevice.h> 
+#include "SPIFFS.h" // needed to upload the lookup table (LUT) to the ESP32
+#include "Statistic.h" // A library convenient to compute average...
 
-// wifi
+// Wifi parameter (put your own)
 
 const char *ssid = "freebox_OOKMJG";
 const char *password = "38100Alexandre!";
@@ -18,11 +44,11 @@ IPAddress local_IP(192, 168, 0, 18);
 IPAddress gateway(192, 168, 0, 254);
 IPAddress subnet(255, 255, 255, 0);
 
-String Data_wifi;
-String Data_Serial;
-uint8_t Number_Decimal = 5;
+// general parameters
 
-int Battery_Percentage;
+String Data_wifi; // a single string of data will be sent by wifi
+String Data_Serial;
+uint8_t Number_Decimal = 5;// decide how decimal number are sent/display
 
 volatile boolean Touch_WIFI = false;
 volatile boolean Light_Sleep = false;
@@ -40,51 +66,59 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 Adafruit_ADS1115 ads1115;
 
-//  parameters that should be easily modify
-// parameter before analyzing bug of OLED programs
-// const uint16_t Number_Samples_ADC_ESP32 = 48;
-// const uint16_t Number_Samples_ADC_ESP32_Second_Loop = 20;
-// const uint16_t Number_Samples_ADS1115 = 20;
+// Those three line control the accuracy of measurement by taking and averaging a given number of sample.
+// the first one should be let at 48. the two other one could be tune to higher level (1=max speed); 
+// higher number= higher averaging = higher accuracy
 
-//I comment const; add again if bugs
 uint16_t Number_Samples_ADC_ESP32 = 48;
 uint16_t Number_Samples_ADC_ESP32_Second_Loop = 1;
 uint16_t Number_Samples_ADS1115 = 1;
+
+// parameter for store the correct value of resistances
+
+// to maximize the accuracy of voltage outputed through the divider bridge, it's necessary to carefully
+// measure the correct resistance value of all resistances.
 
 uint32_t R_20k_ADS0 = 19.89 * 1000;
 uint32_t R_20k_ADS1 = 19.70 * 1000;
 uint32_t R_20k_ADS2 = 19.74 * 1000;
 uint32_t R_20k_ADS3 = 19.93 * 1000;
 
-uint32_t R_115k_ADS0 = 116.6 * 1000; // Sum= 136.55 // expected 136.49
-uint32_t R_115k_ADS1 = 116.7 * 1000; //Sum=136.45 // expected 136.45
-uint32_t R_115k_ADS2 = 116.3 * 1000; //Sum= 136.1 // expected 136.09
-uint32_t R_100k_ADS3 = 99.05 * 1000; //Sum=119.05 //expected:118.98// keep in mind that A3 is limited to 15V cause of 100K and not 115K
+uint32_t R_115k_ADS0 = 116.6 * 1000; 
+uint32_t R_115k_ADS1 = 116.7 * 1000; 
+uint32_t R_115k_ADS2 = 116.3 * 1000; 
+uint32_t R_100k_ADS3 = 99.05 * 1000; 
 
-uint32_t R_10k_SN = 9.87 * 1000; // for battery jauge measure
+uint32_t R_10k_SN = 9.87 * 1000; 
 uint32_t R_10k_34 = 10.03 * 1000;
 uint32_t R_10k_35 = 9.93 * 1000;
 uint32_t R_10k_32 = 10.02 * 1000;
 uint32_t R_10k_33 = 9.86 * 1000;
 
-uint32_t R_100k_34 = 98.3 * 1000;  // Sum=108.4 //expected 108.33
-uint32_t R_100k_35 = 97.95 * 1000; // Sum=107.9 //expected  107.88
-uint32_t R_100k_32 = 97.75 * 1000; // Sum=107.8 //expected 107.77
-uint32_t R_100k_33 = 97.75 * 1000; // Sum=107.65 //expected 107.61
+uint32_t R_100k_34 = 98.3 * 1000;  
+uint32_t R_100k_35 = 97.95 * 1000; 
+uint32_t R_100k_32 = 97.75 * 1000; 
+uint32_t R_100k_33 = 97.75 * 1000; 
+
+// using ads1115 and differential voltage across a shunt resistance (for instance 0.1 ohm), one can compute
+// the current that pass through  this shunt. Change the value of the shunt here if needed.
+
+// ads1115 can measure current high side and low side (before or after the load) but ESP32 GPIO can only measure 
+// high side (because 0 V can't be measured with those GPIO due to problem of linearity of the ADC). The current
+//measurement of ESP32 GPIO are clearly less accurate than the one of the ads1115.
 
 float R_Shunt_1 = 0.1;
 float R_Shunt_2 = 0.1;
-// float R_Shunt_3 = 0.1;
-// float R_Shunt_4 = 0.1;
 
-// other parameters
+
+// Parameters for analogic GPIO
 
 const int Pin_33 = 33; //adc1
 const int Pin_32 = 32; //adc1
 const int Pin_35 = 35; //adc1
 const int Pin_34 = 34; //adc1
-const int Pin_39 = 39; //adc1 /SN
-const int Pin_36 = 36; //adc1 /SP
+const int Pin_39 = 39; //adc1 / write "SN" on certain ESP board but work well as analogic GPIO
+const int Pin_36 = 36; //adc1 /write "SP" on certain ESP board but work well as analogic GPIO
 
 Statistic ADC_Pin_33;
 Statistic ADC_Pin_32;
@@ -120,13 +154,15 @@ float Corrected_Voltage_ADC_Pin_36;
 float Current_ADS1115_Average;
 float Current_ADC_ESP32_Average;
 
-float Current_ADC_0_1_High_Side;
+float Current_ADC_0_1_High_Side; // the variable name contains "high side" but low side measurement work as well
 float Current_ADC_2_3_High_Side;
 
 float Voltage_Diff_ADC_0_1;
 float Voltage_Diff_ADC_2_3;
 
-float Current_ADC_GPIO34_GPIO35_High_Side;
+int Battery_Percentage;
+
+// parameters relative to time
 
 unsigned long Time_from_Begin;
 volatile unsigned long Time_from_Awake;
@@ -136,16 +172,13 @@ long Diff_Time;
 unsigned long Time;
 boolean Trigger_Time_Zero_For_Wifi = false;
 
-//float Current_ADC_0_Low_Side  ;
-//float Current_ADC_1_Low_Side  ;
-//float Current_ADC_2_Low_Side  ;
-//float Current_ADC_3_Low_Side  ;
+//parameter for capacititive touch
 
-//parameter for capacititve touch
+// the triggered level (when the finger touch the capa touch) is not the same if the ESP is powered by USB or by battery.
+// USB: good threshold=20; 
+//on battery: good thresholdl=50; 
+// still some unwanted triggered events on battery with threshold at 50.
 
-// the triggered level (when the finger touch the capa touch) is not the same as the one witH USB vs battery.
-// first case: activated level=10; on battery: activated level=45: thus I need to set up the threshold to 50
-// battery and to lower it to 30 when using the wire.
 uint8_t threshold = 50; // higher generate some bugs
 volatile int8_t Number_Touching = 0;
 volatile int8_t Number_Touching_2 = 0; //for sample rate
@@ -153,39 +186,55 @@ volatile unsigned long sinceLastTouch = 0;
 
 // parameter for retrieving result from SPIFF file
 
-String Line;
 uint16_t Count;
 const uint16_t Size_Array = 4096;
 float MyADS1115array[Size_Array];
 
+
+//first function: will simply compute the voltage of the ads1115 analog input according to the equation of divider bridge and the number
+// of sample asked (to increase accuracy). Samples are stored in a vector of the statistic library and the average
+// function compute the average.
+
 void Compute_Voltage_from_ADS1115()
 {
-    Voltage_Bridge_ADC0.clear();
+    Voltage_Bridge_ADC0.clear();// clear is a function needed by the statistic library
     Voltage_Bridge_ADC1.clear();
     Voltage_Bridge_ADC2.clear();
     Voltage_Bridge_ADC3.clear();
 
     for (uint16_t i = 0; i < Number_Samples_ADS1115; i++)
     {
+// the actual reading of ADC value with the function "readADC_SingleEnded"
+
         Voltage_Bridge_ADC0.add(ads1115.computeVolts(ads1115.readADC_SingleEnded(0)));
         Voltage_Bridge_ADC1.add(ads1115.computeVolts(ads1115.readADC_SingleEnded(1)));
         Voltage_Bridge_ADC2.add(ads1115.computeVolts(ads1115.readADC_SingleEnded(2)));
         Voltage_Bridge_ADC3.add(ads1115.computeVolts(ads1115.readADC_SingleEnded(3)));
     }
 
+// Easy EDA scheme show 10k/100K divider bridge but for practical reasons (i didn't have the quantity 
+// suffisent for each), i also used 115k and 20k.
+
     Corrected_Voltage_ADC0 = (Voltage_Bridge_ADC0.average() * (R_115k_ADS0 + R_20k_ADS0)) / R_20k_ADS0;
     Corrected_Voltage_ADC1 = (Voltage_Bridge_ADC1.average() * (R_115k_ADS1 + R_20k_ADS1)) / R_20k_ADS1;
     Corrected_Voltage_ADC2 = (Voltage_Bridge_ADC2.average() * (R_115k_ADS2 + R_20k_ADS2)) / R_20k_ADS2;
     Corrected_Voltage_ADC3 = (Voltage_Bridge_ADC3.average() * (R_100k_ADS3 + R_20k_ADS3)) / R_20k_ADS3;
 
-    // differential High side measure of current
+// computing current by considering a shunt resistor of 0.1 ohm.
 
     Current_ADC_0_1_High_Side = ((Corrected_Voltage_ADC0 - Corrected_Voltage_ADC1) / R_Shunt_1) * 1000; // *1000 for mA
     Current_ADC_2_3_High_Side = ((Corrected_Voltage_ADC2 - Corrected_Voltage_ADC3) / R_Shunt_2) * 1000;
 
+// computing differentiel voltage
+
     Voltage_Diff_ADC_0_1 = Corrected_Voltage_ADC0 - Corrected_Voltage_ADC1;
     Voltage_Diff_ADC_2_3 = Corrected_Voltage_ADC2 - Corrected_Voltage_ADC3;
 }
+
+// this function computes the voltage of the analogic ESP32 GPIO. The main point is that for a given ADC value (12bit)
+// thus 4096 possibilities, the function search in the look-up table to find the corresponding more accurate value of the ADS1115.
+//One can google "problem ADC ESP32 linearity inaccuracy" to understand the problem. There is a need for correction. This correction uses
+// data retrieved by the much more accurate ads1115.
 
 void Compute_Voltage_from_ESP32()
 {
@@ -196,9 +245,10 @@ void Compute_Voltage_from_ESP32()
     Voltage_Bridge_ADC_Pin_35.clear();
     Voltage_Bridge_ADC_Pin_34.clear();
     Voltage_Bridge_ADC_Pin_39.clear();
-    //   Voltage_Bridge_ADC_Pin_36.clear();
+    //   Voltage_Bridge_ADC_Pin_36.clear(); // line of GPIO36 are commented because i don't use it:
+    // 8 channels is suffisent but one may want to use it.
 
-    for (uint16_t k = 0; k < Number_Samples_ADC_ESP32_Second_Loop; k++) // 32 à la base semblait suffisant.
+    for (uint16_t k = 0; k < Number_Samples_ADC_ESP32_Second_Loop; k++) 
     {
 
         ADC_Pin_33.clear();
@@ -208,7 +258,7 @@ void Compute_Voltage_from_ESP32()
         ADC_Pin_39.clear();
         //  ADC_Pin_36.clear();
 
-        for (uint16_t j = 0; j < Number_Samples_ADC_ESP32; j++) // 32 à la base semblait suffisant.
+        for (uint16_t j = 0; j < Number_Samples_ADC_ESP32; j++) // taking lot of samples to compute average
         {
             ADC_Pin_33.add(analogRead(Pin_33));
             ADC_Pin_32.add(analogRead(Pin_32));
@@ -217,6 +267,9 @@ void Compute_Voltage_from_ESP32()
             ADC_Pin_39.add(analogRead(Pin_39));
             //    ADC_Pin_36.add(analogRead(Pin_36));
         }
+
+// those are the line where for a given ADC value, the function go to look for in "MyADS1115 array"
+// coming from a Look up table to get a corrected value.
 
         Voltage_Bridge_ADC_Pin_33.add(MyADS1115array[uint16_t(ADC_Pin_33.average())]);
         Voltage_Bridge_ADC_Pin_32.add(MyADS1115array[uint16_t(ADC_Pin_32.average())]);
@@ -231,18 +284,35 @@ void Compute_Voltage_from_ESP32()
     Corrected_Voltage_ADC_Pin_35 = (Voltage_Bridge_ADC_Pin_35.average() * (R_100k_35 + R_10k_35)) / R_10k_35;
     Corrected_Voltage_ADC_Pin_34 = (Voltage_Bridge_ADC_Pin_34.average() * (R_100k_34 + R_10k_34)) / R_10k_34;
     Corrected_Voltage_ADC_Pin_39 = (Voltage_Bridge_ADC_Pin_39.average() * (98000 + R_10k_SN)) / R_10k_SN;
+
+    // a uggly way to get the remaining percentage of the battery of the ESP32- volmeter.
+    // I mainly fit the curve of discharging with y=ax+b forgetting the non linear part(beginning and end)
+    // then i used "Corrected_Voltage_ADC_Pin_39" to constantly monitor the voltage of the battery and 
+    // use the linear equation to obtain a "percentage" that very roughly give an idea about the battery level.
+
     Battery_Percentage = round(100 - ((Corrected_Voltage_ADC_Pin_39 - 3.624) * pow(10, 3) / -2.7931));
     if (Battery_Percentage > 100)
     {
         // the equation uses to compute the battery level begins at 3.624 and then it remains approx. 20 000 seconds
         // above 3.624, I consider 100% of battery (more than 5hours). care should be taken for long kinetics to take a look of Corrected_Voltage_ADC_Pin_39
         // its level (for instance 3.8 ; 3.9 ; 4.05 4.18) may indicate a possible kinetics of more than 8-10 hours.
-        
+
         Battery_Percentage = 100;
     }
-    // R_100k not measure yet
+    
     // Corrected_Voltage_ADC_Pin_36 = (Voltage_Bridge_ADC_Pin_36.average() * (R1 + R2)) / R2;
 }
+
+
+// this very long function display the information (voltage, current, battery level, wifi activated or not, speed)
+// on the little OLED 0.96. I use 12 different programs that display different information.
+// program 1: only one voltage display (A0) with big size
+// program 2 to 7: 2 to 8 channels (8 differents voltages) displayed.
+// program 8,9,10,11,12: variations with one or two measure of current and measure of voltage (see directly the
+//corresponding line of code)
+// all programs display also on the OLED, (1)the battery level (left high corner) (2) the speed (1 to 6) (3) if
+// wifi is activated or not (little w display)
+
 
 void Display_OLED()
 {
@@ -276,7 +346,11 @@ void Display_OLED()
         display.print(Corrected_Voltage_ADC0);
         display.display();
 
-        //Data_Serial = String(String(Time) + "," + Corrected_Voltage_ADC0);
+// this long line of data is the line that will be sent by wifi. first row is the program number, then the time,
+// then for instance here, the voltage of A0. each value are separated by a comma to facilitate parsing.
+// i propose a matlab based GUI to reveive the data and plot them but python or C++ GUI programs may do the
+// job as well. 
+
         Data_wifi = String(String(0) + "," + String(Time) + "," + String(Corrected_Voltage_ADC0, Number_Decimal));
 
         break;
@@ -856,32 +930,38 @@ void Display_OLED()
     }
 }
 
+// this function defines the behaviour when the user touch the capacitive button GPIO 02
+
 void Choose_Program_Display_Next()
 {
-    if (millis() - sinceLastTouch < 500)
+    if (millis() - sinceLastTouch < 500) // to prevent bouncing
         return;
-    sinceLastTouch = millis();
+    sinceLastTouch = millis();// to prevent bouncing
 
-    Time_from_Awake = millis();
-    //Serial.println(Time_from_Awake);
+    Time_from_Awake = millis(); // used to restart chronometer for sleep mode when a user touchs a touch.
+
 
     if (Light_Sleep == true) // to only awake the ESP without doing anithing else
     {
-        Light_Sleep = false;
+        Light_Sleep = false; // awake the ESP if it was sleeping and only do that.
     }
     else if (Light_Sleep == false)
     {
-        Number_Touching++;
+// Number_Touching define the program number choose. the "next" function/button increment it. The "previous"
+// function/button decrement it.
+
+        Number_Touching++; 
 
         if (Number_Touching > 12)
         {
-            Number_Touching = 0;
+            Number_Touching = 0; // only 12 programs +1 (13)
         }
 
         Serial.println(Number_Touching);
         Serial.println("Next");
     }
 }
+// the opposite of the previous one: decrement Number_touch when the user touchs this capacitive touch.
 
 void Choose_Program_Display_Previous()
 {
@@ -915,6 +995,11 @@ void Choose_Program_Display_Previous()
     }
 }
 
+// define if, in the main loop, the WIFI portion of code will be used or the other part of code: without WIFI.
+// With WIFI: no sleep mode (to allow long kinetics for instance and data are sent by wifi)
+// Without WIFI: display only on the OLED screen, sleep mode if no interaction after 2 minutes. power economic
+// mode.
+
 void Choose_WIFI()
 {
     if (millis() - sinceLastTouch < 500)
@@ -944,6 +1029,13 @@ void Choose_WIFI()
         }
     }
 }
+
+// this function allows to choose between speed (less samples averaged) and accuracy (lot of sample averaged)
+// if Number_Samples_ADC_ESP32_Second_Loop and Number_Samples_ADS1115 are set to 1, one can expect roughly
+// 20 hz (20 samples sent by second); the buttons are also very reactive. By increasing for instance those two 
+// variables to 20, the time to compute the voltages may cross one or two seconds. The capacitive touch are less
+// reactive but the measurement more accurate.
+
 
 void Change_Sample_Rate()
 {
@@ -1020,17 +1112,15 @@ void Change_Sample_Rate()
     }
 }
 
+// the so-called setup function:
+
 void setup(void)
 {
 
     Serial.begin(115200);
     ads1115.begin();
 
-    // wifi stuff
-
-    //  This part of code will try create static IP address
-
-    // WiFi.config(local_IP,gateway);
+    // wifi: try creating a static IP address
 
     if (!WiFi.config(local_IP, gateway, subnet))
     {
@@ -1048,8 +1138,13 @@ void setup(void)
     server.begin();
     // listen for incoming clients
 
-    // reading in data file (SPIFFS) to get all the true value of voltage for ADC integer
-    // between 0 and 4095. only work for adc1; adc2 should require different Lookup table.
+    // reading in data file (SPIFFS) to get all the correct value of voltage for ADC integer
+    // between 0 and 4095. only work for adc1; adc2 should require a different Lookup table.
+    // one should not use this lookup table since this is specific to a specific ADC but rather
+    // create is own LUT or use polynomial solution proposed on the web.
+
+    // the following line of code read all line of the file Data.txt and store it in a array called
+    // MyADS1115array. 
 
     if (!SPIFFS.begin())
     {
@@ -1075,6 +1170,8 @@ void setup(void)
     }
     f.close();
 
+// initializing OLED screen
+
     if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C))
     {
         Serial.println(F("SSD1306 allocation failed"));
@@ -1082,47 +1179,41 @@ void setup(void)
             ; // Don't proceed, loop forever
     }
 
-    // Serial.println(Number_Touching);
-    // Serial.println(Touch_WIFI);
+// initializing the GPIO used as capacitive touch (interrupt)
 
     touchAttachInterrupt(T0, Choose_WIFI, threshold);
     touchAttachInterrupt(T6, Change_Sample_Rate, threshold);
     touchAttachInterrupt(T2, Choose_Program_Display_Next, threshold);
     touchAttachInterrupt(T3, Choose_Program_Display_Previous, threshold);
 
-    //Serial.println(Number_Touching);
-    //Serial.println(Touch_WIFI);
+// this function allows the above GPIO capacitive touch to be used to awake the ESP32
+// from a light sleep.
 
     esp_sleep_enable_touchpad_wakeup();
 
-    // display.clearDisplay();
-
-    // display.setTextSize(2);
-    // display.setTextColor(WHITE);
-    // display.setCursor(0, 0);
-    // display.println("Welcome!");
-    // display.println("Measure");
-    // display.println("Voltage");
-    // display.println("Max 20V");
-
-    // display.display();
-
-    // delay(1000);
-
     Time_from_Begin = millis();
-
     Time_from_Awake = Time_from_Begin;
 
+// the three following lines are related to problem with capacitive touch (depending on if we work with USB 5V or 
+// battery 5V, the triggering threshold change and unwanted trigger happens). Those lines try to minimize the problem.
     // some problems with capa touch thus reinit here the variable (only needed when working on battery where i
     // I need to set the threshold at a high level (50) cause the basal level is 40; on USB, less problems, those
-    // lines are useless)
+    // lines are useless). T
 
     Touch_WIFI = false;
     Light_Sleep = false;
     Number_Touching = 0; // looks to set at 1 automatically thus reset to zero at the end of setup
 
-    // Serial.println(Number_Touching);
 }
+
+
+// the main loop!!!
+
+// mainly two programs:
+//(1) simple volmeter with display on the OLED and sleep mode if no action during two minutes
+//(2) wifi mode: data are sent over wifi when a client connects to the server. With 1400mAh, data can be sent 20
+// times per second by wifi during more than 7 hours.
+
 
 void loop(void)
 {
@@ -1137,7 +1228,8 @@ void loop(void)
 
         Diff_Time = Time - Time_from_Awake; // Diff_Time need to be able to be negative thus signed
 
-        if (Diff_Time > 120000)
+        if (Diff_Time > 120000) // enter sleeping if inactive during more than 2 minutes. A single touch of capacitive touch
+        // awake it.
         {
             display.clearDisplay();
             display.setTextSize(2);
@@ -1147,7 +1239,7 @@ void loop(void)
             //display.ssd1306_command(SSD1306_DISPLAYOFF); // remove because generate overflow
             Light_Sleep = true;
             delay(100);
-            esp_light_sleep_start();
+            esp_light_sleep_start();// the main function for entering light sleep mode.
         }
     }
 
@@ -1175,7 +1267,7 @@ void loop(void)
 
                 Display_OLED();
 
-                client.println(Data_wifi);
+                client.println(Data_wifi);// the main line to send data over wifi
 
                 if (Touch_WIFI == false)
                 {
