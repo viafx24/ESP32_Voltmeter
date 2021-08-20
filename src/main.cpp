@@ -1,7 +1,7 @@
 
 // This is a very long function (but there is only one!) to manage the functionnality of the ESP32-voltmeter.
 // the code is long and may appear ugly but I don't think it is particularly complictated. The length comes from
-// the fact that there is 8 possible channel measurements (every things is thus mutilply by 8).
+// the fact that there is 8 possible channel measurements (everythings are thus multiply by 8).
 
 // this code proposes:
 //(1) to compute voltage using divider bridge of 4 channels of the ADS11115
