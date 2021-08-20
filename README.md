@@ -44,18 +44,19 @@ The ESP32 comes with several GPIO that can act as capacitive touches. This is pa
 * As classical switch buttons, the user may experiment “bouncing”: one finger touch corresponding to several triggers. Software (using if statement and time) allows to get rid-off this unwanted behaviour.
 * Those capacitive touches use a threshold level programmed in the soft. The correct threshold (often in the range 20-40) may differ function of the power-supply used (USB 5V vs battery 5V for instance). I don’t understand this behaviour but if one experiments undesired trigger, the threshold should probably be decrease.
 * In my version of the ESP32, GPIO0 (Touch 1) doesn’t work. I thus used: GPIO4, 2, 15 and 14 (respectively Touch0, Touch2, Touch3 and Touch6).
+
 The capacitive touches are used in this project as button performing the following actions:
 * Next: go to the next program on the OLED screen
 * Previous: got to the previous program on the OLED screen
 * Speed: increase the “number” of the speed (range 1 to 6). Speed “1” is maximum speed (roughly 20 Hz; 20 measures sent per second). This allows fluid reactivity of buttons and screen. Speed “6” will average lot of samples to increase accuracy: this behaviour may be desired when measuring current. But the sample rate falls closed to 1 second and reactivity of capacitive touches and screen is thus lowered.
 * WIFI: this allows the server to wait for client connection and then send the data over Wifi. This mode consumes more power and disable the “light sleep mode” in order to being able to perform long kinetics (measure of voltage over time during several hours for instance).
+
 In normal mode (not WIFI mode), the ESP32-volmeter enters in light-sleep mode after 2 minutes without interaction (touching the capacitive touches). This saves energy in case of one forgot to switch off the voltmeter. In sleep mode, The ESP32 can be awake immediately by touching any capacitive touches.
 Here is the EasyEDA circuit:
  
 Figure1: EasyEDA circuit.
  
 Figure 2: The ESP32-Voltmeter. At the bottom left, 4 capacitives touches. Bottom right: the OLED screen showing 8 channels and thus displaying 8 different voltages. Above the OLED, the ADS1115 module providing 4 high resolution channels. On the top, all the divider bridges and the departure of the probe (jumper wires going to a breadboard).
-
 
  
 Figure 3: inside the box, one can observe a li-ion battery on the left, the boost converter on the right. Above the boost converter, the charger showing the microUSB connexion. On the left corner, a switch to switch on/off the voltmeter. On the right corner, two banana connectors to use classical multimeter probes or other type of wire.
@@ -65,10 +66,12 @@ Figure 4: similar to figure 2 but displaying only one voltage with a big font si
 
  
 Figure 5: example of use, probing different areas of a breadboard.
-Software considerations
+
+## Software considerations
 I have used platformio to write and upload the code in the ESP32. Platformio which is an extension for visual studio code is particularly well-suited for this kind of projects that require many tests and source code management. However, one could probably use the Arduino IDE without any problem and with solely a few changes. For instance:
-•	removing the first line of the file main.cpp : #include <Arduino.h> which is needed in platformio but not in Arduino IDE; 
-•	changing the extension of the file from .cpp to .ino
+* removing the first line of the file main.cpp : #include <Arduino.h> which is needed in platformio but not in Arduino IDE; 
+* changing the extension of the file from .cpp to .ino
+
 I have used the Arduino library for esp32 (not ESP-IDF). All other libraries were installed locally with the library manager without problem. Check the platformio.ini to see those libraries (there is mainly the OLED library, the ADS1115 library and a convenient statistic library solely used to compute mean).
 In WIFI mode, a server on the ESP32 listens for client connection on a static IP address. When a client is connected, it sends a single string containing numeric value separated by comma. The first value is the number of the program, the second is a timestamp (in millisecond), the others change function of the program chosen but mainly consist of the voltages or currents of the different channels. Here an example of a line sent over wifi:
 2, 8432, 3.345, 3.344, 11.96
@@ -76,20 +79,24 @@ In WIFI mode, a server on the ESP32 listens for client connection on a static IP
 To receive, treat and plot those data, I have written a little graphical user interface (GUI) with Matlab (which is not a free software) because it was the easiest and quickest way to do for me. However, one may easily build a similar GUI using python/matplotlib or C++/QT for instance.
  
 Figure 6: A GUI to display data. Here 5 channels showing voltage over time at 20 Hz. One can see the high accuracy of A0, A1, A2, A3 and the lower one of GPIO 34 (green curve at the bottom). In fact, by decreasing the “speed”, we can increase accuracy by averaging dozens of samples and get a quite good accuracy with the GPIO of the ESP32. The static tab at the top proposes a “multimeter view” when temporal information is not needed. 
-The inaccuracy of the ADC of ESP32
+
+## The inaccuracy of the ADC of ESP32
 One of the biggest problems was the inaccuracy of the ADC of the ESP32. This problem is largely documented on the web and thus I will not describe precisely the solution or the code to by-pass this issue. However, here are the main line:
 The ADC is not linear close to zero and close to 3.3V. Thus, closed to 0 or 3.3V, the 12-bit value doesn’t reflect the actual voltage. However, the rest of the range, let’s say from 0.125 to 3.1V is linear but with a significant offset and thus still failed to provide a correct voltage measurement. How to deal with this problem? The esp32 has a 8 bit DAC connected to GPIO 25, : we can thus apply 256 voltages from 0 and 3.3V over time, creating a slope. At the same time, we can measure for each 256 voltages the value of the ADC provided by (1) the ADS1115 which is correct and (2) the one of the ESP32 which is not. Then we can use the first to correct the second. Since the ADC of the ESP is 12 bit (4096 different values), ideally, we would dispose of a corrected value for each 4096 possibilities of the ADC. To do that, we perform an interpolation of the data obtained with the 8 bit DAC (256 values) to obtain 4096 values (12 bit ADC). Once the interpolation is performed, we can write in a file, two columns: one from 0 to 4095, the second containing the corrected corresponding voltage. When an analogic GPIO ADC “proposes” a value of ADC (corresponding to an index between 0 and 4095), the program search on the file the corresponding value of corrected voltage. This is called on the web a look-up table. This array of two columns doesn’t need to be put in the main.cpp (the file uploaded in the ESP32). Indeed, there is a functionality that exist in ESP32 (not present in Arduino) called SPIFFS. It consists to upload a data file in the flash memory of the ESP32. In the setup() function of main.cpp, we simply retrieve all the value in an array to be ready to apply the correction. The procedure to upload a data file to the ESP32 is easy and largely described on the web. The data file that I used (lookup table LUT) is provided on github in the folder Data but it may be mostly related to my own ADC ESP32 and I don’t think it would be well-suited for another ESP32 (even if it may already slightly increase the accuracy). Thus, I strongly encourage to create its own look-up table. Other options are to fit the data with a polynomial to perform the correction with an equation rather than a LUT or to simply apply a little offset (likely an addition) in the linear part to significantly increase the accuracy of the ADC. In the folders “Related_CPP_Scripts” and “Related_Matlab_scripts”, one may find some scripts describing the procedure but it’s a mess and the code is neither well commented neither maintained. 
  
 Figure 7: Y axes is voltage up to 3.3V. X axes is number of bit (0 to 255) of the DAC (could be consider as time here). Green curve is voltage of the ADS1115 : perfectly linear from the beginning to the end. Red curve is the ADC of the ESP32. At the very very beginning (I should have included a zoom) one may observe the non-linearity closed to zero. After 2.6V, the red curve crosses the green one and stop to be linear and become quite exponential. In between, the red curve is quite linear and is just below the green one from a small offset. In most case, simply adding this offset and working in the linear region could be sufficient. In other case where accuracy is needed, polynomial or LUT would be the solution.
-Measuring current
+
+## Measuring current
 To measure current, one may use two channels “scope” across a given resistor to get the differential voltage and then divide by the resistor value to get the current (I=U/R). But most of the time, we need to measure significant current (in the range 20mA to 2A for instance) and to perform this task, we need so-called shunt resistors that have small values (0.1 ohm for instance). The consequence of using a small resistor is that the voltage drop will be tiny and it’s why we critically need accuracy to get a good picture of this tiny voltage drop. On the web, one may find that those shunts may be used “high side”, i.e above the load or “low-side” i.e below the load. The strong accuracy of ADS1115 allows to compute current measurement across shunt resistor both at low and high side. The advantage of low side is that it only requires one probe since the second is the ground (0V). On the contrary, the GPIO of the ESP32, once corrected “as best as possible” can also measure current: I performed test from 20mA to 900mA (data not shown) but only “high side”. The reason is simple: value of voltage below 0.125V (without voltage divider) or below 1.25V (with a 1/10 voltage divider) just can’t be measured because of the problem of non-linearity in this area. 
 High-side, with either ADS1115 or GPIO of ESP32, I found quite correct measure of current (I used Ina219 module to compare). The difference I could observe with Ina219 is attribute to the exact value of the shunt resistor (0.1 ohm) that is too low to be measured. For instance, Ina219 would indicate 105mA, the ADS1115 would indicate 115mA, the GPIO of ESP32 a value fluctuating maybe between 100 and 120mA, but still acceptable to my point of view (a quite low-cost way to measure current compared to Ina219 or ads1115).
-Conclusion and discussion
+
+## Conclusion and discussion
 I hope this project may have interested some people. If one doesn’t want to struggle with the ADC of ESP32, one simple solution consists to work with “only” 4 channels with the ADS1115 or using two ADS1115 and thus still working with 8 channels. 
 One may also clearly simplify the design of this voltmeter by removing parts that could be considered of/as secondary importance (wifi, battery), simply keeping the OLED and the ADS1115 to work with an Arduino for instance. Still a good tool to probe a breadboard easily.
 On the contrary, why not complexify this voltmeter by transforming it in a kind of oscilloscope? I mean, increasing the sample rate as much as possible? This is possible. But I decided to split the voltmeter design from an oscilloscope design to maintain this project easy (and above all, to finish it! 😊). However, I list here some ideas to increase the sample rate:
-•	For unknown reason (probably accuracy), a single measurement with the ADS1115 takes 8ms which is an extremely long time. There is probably a software way to diminish this time.
-•	Another limit is the serial.println() (USB wire) or client.println() (WIFI) that takes time and would limit also the sample rate. To by-pass this limit, one may take for instance 20 000 samples and store them in the big memory of the ESP32 before sending them over serial or WIFI (but losing the real-time).
-•	I tested the max sample rate of the ADC of the ESP without any optimization neither data correction and could get a sample rate closed to 20 kHz. Using lower-level libraries or optimizing certain functions should probably allow to attain much higher sample rate.
+* For unknown reason (probably accuracy), a single measurement with the ADS1115 takes 8ms which is an extremely long time. There is probably a software way to diminish this time.
+* Another limit is the serial.println() (USB wire) or client.println() (WIFI) that takes time and would limit also the sample rate. To by-pass this limit, one may take for instance 20 000 samples and store them in the big memory of the ESP32 before sending them over serial or WIFI (but losing the real-time).
+* I tested the max sample rate of the ADC of the ESP without any optimization neither data correction and could get a sample rate closed to 20 kHz. Using lower-level libraries or optimizing certain functions should probably allow to attain much higher sample rate.
+
 To conclude, this voltmeter definitively needs its own 3D case but this latter may arrive for Christmas. 😊
 
