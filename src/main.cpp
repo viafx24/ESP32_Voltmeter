@@ -160,7 +160,7 @@ float Current_ADC_2_3_High_Side;
 float Voltage_Diff_ADC_0_1;
 float Voltage_Diff_ADC_2_3;
 
-int Battery_Percentage;
+uint8_t Battery_Percentage;// trying uint8_t to avoid négative number; should be between 0 and 100
 
 // parameters relative to time
 
@@ -289,7 +289,8 @@ void Compute_Voltage_from_ESP32()
     // I mainly fit the curve of discharging with y=ax+b forgetting the non linear part(beginning and end)
     // then i used "Corrected_Voltage_ADC_Pin_39" to constantly monitor the voltage of the battery and 
     // use the linear equation to obtain a "percentage" that very roughly give an idea about the battery level.
-
+    
+    Serial.println(Corrected_Voltage_ADC_Pin_39);
     Battery_Percentage = round(100 - ((Corrected_Voltage_ADC_Pin_39 - 3.624) * pow(10, 3) / -2.7931));
     if (Battery_Percentage > 100)
     {
