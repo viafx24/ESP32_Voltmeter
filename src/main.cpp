@@ -36,12 +36,14 @@
 
 // Wifi parameter (put your own)
 
-const char *ssid = "freebox_OOKMJG";
-const char *password = "38100Alexandre!";
+const char *ssid = "SFR_5DD8";
+//const char *password = "uguele2vocuminhonext"; //parents
+const char *password = "96wwza4yfz24qhtc4mxq"; 
+
 
 // to set the static IP address to 192, 168, 1, 184
-IPAddress local_IP(192, 168, 0, 18);
-IPAddress gateway(192, 168, 0, 254);
+IPAddress local_IP(192, 168, 1, 46);
+IPAddress gateway(192, 168, 1, 1);
 IPAddress subnet(255, 255, 255, 0);
 
 // general parameters
@@ -290,7 +292,7 @@ void Compute_Voltage_from_ESP32()
     // then i used "Corrected_Voltage_ADC_Pin_39" to constantly monitor the voltage of the battery and 
     // use the linear equation to obtain a "percentage" that very roughly give an idea about the battery level.
     
-    Serial.println(Corrected_Voltage_ADC_Pin_39);
+    //Serial.println(Corrected_Voltage_ADC_Pin_39);
     Battery_Percentage = round(100 - ((Corrected_Voltage_ADC_Pin_39 - 3.624) * pow(10, 3) / -2.7931));
     if (Battery_Percentage > 100)
     {
